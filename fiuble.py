@@ -76,8 +76,7 @@ def analizar_input(palabra, arriesgo):
     while(indice < len(arriesgo) and es_palabra_valida):
 
         # Valida que la letra no sea un caracter especial o numérico
-        if not arriesgo[indice].isalpha() or arriesgo[indice].isnumeric():    #es necesario el isnumeric?
-        #if not arriesgo[indice].isalpha():
+        if not arriesgo[indice].isalpha():
             mensaje = "El caracter \"" + arriesgo[indice] + "\" es inválido"
             #mensaje = "La palabra es inválida. No se permiten números ni caracteres especiales"
             es_palabra_valida = False
@@ -121,81 +120,87 @@ def analizar_input(palabra, arriesgo):
 
 def raiz():
 
-    # Obtiene una palabra aleatoria de la lista y la normaliza
-    palabras_para_adivinar = obtener_palabras_validas()
-    indice_palabra = random.randint(0, len(palabras_para_adivinar) - 1)
-    palabra_a_adivinar = formatear_palabra(palabras_para_adivinar[indice_palabra])
+    respuesta = ""
 
-    # Listado de palabras introducidas por el jugador
-    palabras_intentadas = []
-     
+    while respuesta != "N":
+    
+        # Obtiene una palabra aleatoria de la lista y la normaliza
+        palabras_para_adivinar = obtener_palabras_validas()
+        indice_palabra = random.randint(0, len(palabras_para_adivinar) - 1)
+        palabra_a_adivinar = formatear_palabra(palabras_para_adivinar[indice_palabra])
 
-    # Listado de índices de la palabra descubiertos
-    palabra_revelada = [False for x in range(5)]
+        # Listado de palabras introducidas por el jugador
+        palabras_intentadas = []
+        
+
+        # Listado de índices de la palabra descubiertos
+        palabra_revelada = [False for x in range(5)]
 
 
-    intentos = 0
-    gano = False
+        intentos = 0
+        gano = False
 
-    # Inicia el conteo de tiempo desde el segundo acutal en
-    # el sistema epoch (UNIX)
-    tiempo_inicial = time.time()
+        # Inicia el conteo de tiempo desde el segundo acutal en
+        # el sistema epoch (UNIX)
+        tiempo_inicial = time.time()
+    
+        while (intentos < INTENTOS_MAXIMOS and gano == False):
 
-    while (intentos < INTENTOS_MAXIMOS and gano == False):
+            # Construye el string de la palabra a adivinar
+            # dependiendo de las coincidencias que haya en los
+            # listados
+            progreso_palabra = ""
+            for indice, letra in enumerate(palabra_a_adivinar):
+                if palabra_revelada[indice] == True:
+                    progreso_palabra += letra
+                else:
+                    progreso_palabra += "?"
 
-        # Construye el string de la palabra a adivinar
-        # dependiendo de las coincidencias que haya en los
-        # listados
-        progreso_palabra = ""
-        for indice, letra in enumerate(palabra_a_adivinar):
-            if palabra_revelada[indice] == True:
-                progreso_palabra += letra
+            print("\n\nPalabra a adivinar: " + progreso_palabra)
+
+            # Imprime todas las palabras intentadas por el jugador
+            for indice_intento in range(5):
+                if (indice_intento < len(palabras_intentadas)):
+                    print(palabras_intentadas[indice_intento])
+                else:
+                    print("?" * len(palabra_a_adivinar))
+
+            # Solicita una entrada de una palabra y la analiza
+            arriesgo = input("Arriesgo: ")
+            palabra_analizada = analizar_input(palabra_a_adivinar, arriesgo)
+
+            # La añade al listado de palabras arriesgadas
+            palabras_intentadas.append(palabra_analizada["texto_con_colores"])
+
+            # Si la palabra ingresada por el jugador no de ningún
+            # problema, imprime con colores la palabra que arriesgó,
+            # y actualiza los índices de las coincidencias encontradas
+            if palabra_analizada["mensaje"] == "":
+                print("Palabra arriesgada: " + palabra_analizada["texto_con_colores"])
+                for indice_coincidencia in palabra_analizada["indices_con_coincidencias"]:
+                    palabra_revelada[indice_coincidencia] = True
+
+            # Caso contrario, imprime el problema que tiene esa palabra
             else:
-                progreso_palabra += "?"
+                print(palabra_analizada["mensaje"])
 
-        print("\n\nPalabra a adivinar: " + progreso_palabra)
+            # Si la palabra coincide perfectamente con la palabra a
+            # adivinar, se gana el juego
+            if (palabra_analizada["es_igual"] == True):
+                gano = True
 
-        # Imprime todas las palabras intentadas por el jugador
-        for indice_intento in range(5):
-            if (indice_intento < len(palabras_intentadas)):
-                print(palabras_intentadas[indice_intento])
-            else:
-                print("?" * len(palabra_a_adivinar))
+            intentos += 1
 
-        # Solicita una entrada de una palabra y la analiza
-        arriesgo = input("Arriesgo: ")
-        palabra_analizada = analizar_input(palabra_a_adivinar, arriesgo)
+        # Obtiene el tiempo final siguiendo la misma metodología de antes
+        tiempo_final = time.time()
 
-        # La añade al listado de palabras arriesgadas
-        palabras_intentadas.append(palabra_analizada["texto_con_colores"])
-
-        # Si la palabra ingresada por el jugador no de ningún
-        # problema, imprime con colores la palabra que arriesgó,
-        # y actualiza los índices de las coincidencias encontradas
-        if palabra_analizada["mensaje"] == "":
-            print("Palabra arriesgada: " + palabra_analizada["texto_con_colores"])
-            for indice_coincidencia in palabra_analizada["indices_con_coincidencias"]:
-                palabra_revelada[indice_coincidencia] = True
-
-        # Caso contrario, imprime el problema que tiene esa palabra
+        if gano:
+            segundos_de_juego = int(tiempo_final - tiempo_inicial)
+            minutos_de_juego = math.floor(segundos_de_juego / 60)
+            print(f"Ganaste! Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra")
         else:
-            print(palabra_analizada["mensaje"])
-
-        # Si la palabra coincide perfectamente con la palabra a
-        # adivinar, se gana el juego
-        if (palabra_analizada["es_igual"] == True):
-            gano = True
-
-        intentos += 1
-
-    # Obtiene el tiempo final siguiendo la misma metodología de antes
-    tiempo_final = time.time()
-
-    if gano:
-        segundos_de_juego = int(tiempo_final - tiempo_inicial)
-        minutos_de_juego = math.floor(segundos_de_juego / 60)
-        print(f"Ganaste! Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra")
-    else:
-        print(f"Perdiste! La palabra era {palabra_a_adivinar}")
-
+            print(f"Perdiste! La palabra era {palabra_a_adivinar}")
+            
+        respuesta = (input ("Desea jugar otra partida? (S/N)")).upper()
+        
 raiz()
