@@ -1,7 +1,7 @@
+from utiles import *
 import random
 import time
 import math
-from utiles import *
 
 INTENTOS_MAXIMOS = 5
 REEMPLAZOS_TILDES = { "á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u" }
@@ -31,19 +31,16 @@ def cambio_de_turno(turno_inicial):
 #---------------------------control de puntaje-----------------#
 
 # Defino estas variables para que por mediante funciones acumule los puntajes de cada jugador 
-Jugador1_punt= 0
-Jugador2_punt= 0
-
+Jugador1_punt = 0
+Jugador2_punt = 0
 
 def sistema_puntaje(intentos):
     """
-    Esta funcion tiene un diccionario con la relacion de intentos y puntos
-    devolviendo el valor correspondiente 
+        Esta funcion tiene un diccionario con la relacion de intentos y puntos
+        devolviendo el valor correspondiente 
     """
     valor_puntaje = {0:50,1:40,2:30,3:20,4:10,5:-100} 
     return valor_puntaje[intentos]
-
-
 
 def guardar_puntaje (puntaje,turno,turno_inicial):
 
@@ -56,12 +53,12 @@ def guardar_puntaje (puntaje,turno,turno_inicial):
 
     jugador2punt = 0
                         # En el caso de si alguno de los dos gano
-    if turno == 0:
+    if turno ==0:
         jugador1punt = puntaje
         jugador2punt = - puntaje
     else:
         jugador2punt = puntaje
-        jugador1punt = - puntaje
+        jugador1punt = -puntaje
                                 # En el caso de que ambos perdieron
     if puntaje == -100:
         if turno_inicial == 0:
@@ -89,11 +86,11 @@ def game_over(gano,minutos_de_juego,segundos_de_juego,palabra_a_adivinar,puntaje
         if ultimo_turno == 0:
             print (f"\nGanaste {nombres [ultimo_turno]} Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra\n")
             print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug1} puntos")
-            print(f"EL jugador {nombres[1]} perdio un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug2}\n")
+            print(f"EL jugador {nombres[1]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug2}\n")
         else:
             print (f"\nGanaste {nombres [ultimo_turno]} Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra\n")
             print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug2} puntos")
-            print(f"EL jugador {nombres[0]} perdio un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug1}\n")
+            print(f"EL jugador {nombres[0]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug1}\n")
        # print(f"Ganaste! Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra")
        # print()
        # print(f"Obtuviste un total de {puntaje_jugador} puntos,tenes acumulados {puntaje_total_jug}")
@@ -103,24 +100,23 @@ def game_over(gano,minutos_de_juego,segundos_de_juego,palabra_a_adivinar,puntaje
         print(f"\nPerdieron! La palabra era {palabra_a_adivinar}")
         print()
         if turno_inicial == 0:
-            print(f"El jugador {nombres[turno_inicial]} perdio un total de 100 y tiene acumulado {puntos_del_jug1}")
-            print(f"Y el jugador {nombres[1]} perdio un total de 50 y tiene un total de {puntos_del_jug2}\n")
+            print(f"El jugador {nombres[turno_inicial]} perdió un total de 100 y tiene acumulado {puntos_del_jug1}")
+            print(f"Y el jugador {nombres[1]} perdió un total de 50 y tiene un total de {puntos_del_jug2}\n")
         else:
-            print(f"El jugador {nombres[turno_inicial]} perdio un total de 100 y tiene acumulado {puntos_del_jug2}")
-            print(f"Y el jugador {nombres[0]} perdio un total de 50 y tiene un total de {puntos_del_jug1}\n")
+            print(f"El jugador {nombres[turno_inicial]} perdió un total de 100 y tiene acumulado {puntos_del_jug2}")
+            print(f"Y el jugador {nombres[0]} perdió un total de 50 y tiene un total de {puntos_del_jug1}\n")
         #print(f"Perdiste un total de 100 puntos, tenes acumulados {puntaje_total_jug}")
 
     pregunta =""
     juego = False
     while (pregunta != "S") and (pregunta != "N"):
-        pregunta = input("Desea jugar otra pratida? S/N: ").upper()
+        pregunta = input("Desea jugar otra partida? S/N: ").upper()
         
     if pregunta == "S":
 
         juego = True
 
     return juego
-
 
 #-----------------control de letras-------------------------#
 
