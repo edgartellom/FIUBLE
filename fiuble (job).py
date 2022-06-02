@@ -30,10 +30,6 @@ def cambio_de_turno(turno_inicial):
 
 #---------------------------control de puntaje-----------------#
 
-# Defino estas variables para que por mediante funciones acumule los puntajes de cada jugador 
-Jugador1_punt = 0
-Jugador2_punt = 0
-
 def sistema_puntaje(intentos):
     """
         Esta funcion tiene un diccionario con la relacion de intentos y puntos
@@ -71,10 +67,6 @@ def guardar_puntaje (puntaje,turno,turno_inicial):
     
 
 #-----------------------control del juego----------------------------#
-
-# variable de control para el ciclo del juego
-
-juego_ = True 
 
 def game_over(gano,minutos_de_juego,segundos_de_juego,palabra_a_adivinar,puntaje_jugador,turno_inicial, ultimo_turno, nombres,puntos_del_jug1,puntos_del_jug2):
 
@@ -233,7 +225,7 @@ def analizar_input(palabra, arriesgo):
 
 #-----------------control del juego------------------------#
 
-def raiz(jugadores,turn_actu):
+def partida(jugadores,turn_actu):
     
     # Obtiene una palabra aleatoria de la lista y la normaliza
     palabras_para_adivinar = obtener_palabras_validas()
@@ -330,25 +322,39 @@ def raiz(jugadores,turn_actu):
     return {"gano":gano, "minutos_de_juego":minutos_de_juego, "segundos_de_juego":segundos_de_juego,
     "intentos":intentos,"palabra_a_adivinar":palabra_a_adivinar, "puntaje_jugador":puntaje_jugador, "ultimo_turno":turn_actu}
 
-# inicio del juego
 
-NOMBRES_JUGADORES = dos_jug() #Guarda una tupla con los dos nombres
+def juego():
 
-turno_inicial = turno() #Guarda el valor del primer turno dado,  que despues me va a servir para cambiarla al volver
-                        #empezar el juego
+    # inicio del juego
 
-while juego_:
+    # variable de control para el ciclo del juego
 
-    resultado = raiz(NOMBRES_JUGADORES,turno_inicial) # Esta variable guarada el diccionario que regresa la funcion con todos los datos de la partida
+    juego_ = True 
 
-    puntajes_finales = guardar_puntaje(resultado["puntaje_jugador"],resultado["ultimo_turno"],turno_inicial) 
+    # Defino estas variables para que por mediante funciones acumule los puntajes de cada jugador 
+    Jugador1_punt = 0
+    Jugador2_punt = 0
 
-    Jugador1_punt += puntajes_finales[0]
-    Jugador2_punt += puntajes_finales[1]
+    NOMBRES_JUGADORES = dos_jug() #Guarda una tupla con los dos nombres
 
-    juego_ = game_over(resultado["gano"],resultado["minutos_de_juego"],
-        resultado["segundos_de_juego"],resultado["palabra_a_adivinar"],
-        resultado["puntaje_jugador"],turno_inicial, resultado["ultimo_turno"], 
-        NOMBRES_JUGADORES,Jugador1_punt,Jugador2_punt) 
+    turno_inicial = turno() #Guarda el valor del primer turno dado,  que despues me va a servir para cambiarla al volver
+                            #empezar el juego
 
-    turno_inicial = cambio_de_turno(turno_inicial)
+    while juego_:
+
+        resultado = partida(NOMBRES_JUGADORES,turno_inicial) # Esta variable guarada el diccionario que regresa la funcion con todos los datos de la partida
+
+        puntajes_finales = guardar_puntaje(resultado["puntaje_jugador"],resultado["ultimo_turno"],turno_inicial) 
+
+        Jugador1_punt += puntajes_finales[0]
+        Jugador2_punt += puntajes_finales[1]
+
+        juego_ = game_over(resultado["gano"],resultado["minutos_de_juego"],
+            resultado["segundos_de_juego"],resultado["palabra_a_adivinar"],
+            resultado["puntaje_jugador"],turno_inicial, resultado["ultimo_turno"], 
+            NOMBRES_JUGADORES,Jugador1_punt,Jugador2_punt) 
+
+        turno_inicial = cambio_de_turno(turno_inicial)
+
+
+juego()
