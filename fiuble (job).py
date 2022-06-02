@@ -5,38 +5,27 @@ import math
 
 INTENTOS_MAXIMOS = 5
 REEMPLAZOS_TILDES = { "á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u" }
+PUNTAJE_POR_INTENTOS = {0: 50, 1: 40, 2: 30, 3: 20, 4: 10, 5: -100}
 
 
 #------------control de dos jugadores-------------------------#
 
-def dos_jug():
+def solicitar_nombres_jugadores():
     jug_1 = input("Ingrese el nombre del jugador 1: ")
     jug_2 = input("Ingrese el nombre del jugador 2: ")
     return jug_1 , jug_2
 
-def turno():
+def turno_aleatorio():
     turno = random.randint(0,1)
     return turno
 
-def cambio_de_turno(turno_inicial):
+def cambio_de_turno(turno_actual):
     """ 
         Al finalizar la partida se llama a esta funcion para cambiar el turno 
     """
-    if turno_inicial == 0:
-        turno_inicial = 1
-    else:
-        turno_inicial = 0
-    return turno_inicial
+    return 1 if turno_actual == 0 else 0
 
 #---------------------------control de puntaje-----------------#
-
-def sistema_puntaje(intentos):
-    """
-        Esta funcion tiene un diccionario con la relacion de intentos y puntos
-        devolviendo el valor correspondiente 
-    """
-    valor_puntaje = {0:50,1:40,2:30,3:20,4:10,5:-100} 
-    return valor_puntaje[intentos]
 
 def guardar_puntaje (puntaje,turno,turno_inicial):
 
@@ -225,7 +214,7 @@ def analizar_input(palabra, arriesgo):
 
 #-----------------control del juego------------------------#
 
-def partida(jugadores,turn_actu):
+def partida(jugadores,turno_actual):
     
     # Obtiene una palabra aleatoria de la lista y la normaliza
     palabras_para_adivinar = obtener_palabras_validas()
@@ -268,10 +257,10 @@ def partida(jugadores,turn_actu):
                 print("?" * len(palabra_a_adivinar))
 
         # Solicita una entrada de una palabra y la analiza
-        if turn_actu == 0:
-            print(f"Es el turno del jugador {jugadores[turn_actu]}")
+        if turno_actual == 0:
+            print(f"Es el turno del jugador {jugadores[turno_actual]}")
         else:
-            print(f"Es el turno del jugador {jugadores[turn_actu]}")
+            print(f"Es el turno del jugador {jugadores[turno_actual]}")
 
         arriesgo = input("Arriesgo: ")
         palabra_analizada = analizar_input(palabra_a_adivinar, arriesgo)
@@ -296,21 +285,21 @@ def partida(jugadores,turn_actu):
         if (palabra_analizada["es_igual"] == True):
             gano = True
         else:                   #Si no adivino la palabra cambia de turno
-            if turn_actu == 0:
-                turn_actu = 1
+            if turno_actual == 0:
+                turno_actual = 1
             else:
-                turn_actu = 0  
+                turno_actual = 0  
 
         #asigna el puntaje dependiendo de los intentos
 
-        puntaje_jugador = sistema_puntaje(intentos)
+        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos]
 
         intentos += 1
         
 
     # esta condicion garantiza que al perder te de el puntaje correspondiente
     if gano == False:    
-        puntaje_jugador = sistema_puntaje(intentos)
+        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos]
 
     # Obtiene el tiempo final siguiendo la misma metodología de antes
     tiempo_final = time.time()
@@ -320,7 +309,7 @@ def partida(jugadores,turn_actu):
     # regresar un diccionario con los resultados finales de la partida actual
 
     return {"gano":gano, "minutos_de_juego":minutos_de_juego, "segundos_de_juego":segundos_de_juego,
-    "intentos":intentos,"palabra_a_adivinar":palabra_a_adivinar, "puntaje_jugador":puntaje_jugador, "ultimo_turno":turn_actu}
+    "intentos":intentos,"palabra_a_adivinar":palabra_a_adivinar, "puntaje_jugador":puntaje_jugador, "ultimo_turno":turno_actual}
 
 
 def juego():
@@ -335,26 +324,26 @@ def juego():
     Jugador1_punt = 0
     Jugador2_punt = 0
 
-    NOMBRES_JUGADORES = dos_jug() #Guarda una tupla con los dos nombres
+    NOMBRES_JUGADORES = solicitar_nombres_jugadores() #Guarda una tupla con los dos nombres
 
-    turno_inicial = turno() #Guarda el valor del primer turno dado,  que despues me va a servir para cambiarla al volver
+    turno = turno_aleatorio() #Guarda el valor del primer turno dado,  que despues me va a servir para cambiarla al volver
                             #empezar el juego
 
     while juego_:
 
-        resultado = partida(NOMBRES_JUGADORES,turno_inicial) # Esta variable guarada el diccionario que regresa la funcion con todos los datos de la partida
+        resultado = partida(NOMBRES_JUGADORES,turno) # Esta variable guarada el diccionario que regresa la funcion con todos los datos de la partida
 
-        puntajes_finales = guardar_puntaje(resultado["puntaje_jugador"],resultado["ultimo_turno"],turno_inicial) 
+        puntajes_finales = guardar_puntaje(resultado["puntaje_jugador"],resultado["ultimo_turno"],turno) 
 
         Jugador1_punt += puntajes_finales[0]
         Jugador2_punt += puntajes_finales[1]
 
         juego_ = game_over(resultado["gano"],resultado["minutos_de_juego"],
             resultado["segundos_de_juego"],resultado["palabra_a_adivinar"],
-            resultado["puntaje_jugador"],turno_inicial, resultado["ultimo_turno"], 
+            resultado["puntaje_jugador"],turno, resultado["ultimo_turno"], 
             NOMBRES_JUGADORES,Jugador1_punt,Jugador2_punt) 
 
-        turno_inicial = cambio_de_turno(turno_inicial)
+        turno = cambio_de_turno(turno)
 
 
 juego()
