@@ -3,117 +3,132 @@ import random
 import time
 import math
 
+# Constantes
 INTENTOS_MAXIMOS = 5
 REEMPLAZOS_TILDES = { "á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u" }
+PUNTAJE_POR_INTENTOS = {0: 50, 1: 40, 2: 30, 3: 20, 4: 10, 5: -100}
 
 
 #------------control de dos jugadores-------------------------#
 
-def dos_jug():
+def solicitar_nombres_jugadores():
+    '''
+    Solicita los nombres de los jugadores y los
+    retorna empaquetados
+    '''
+
     jug_1 = input("Ingrese el nombre del jugador 1: ")
     jug_2 = input("Ingrese el nombre del jugador 2: ")
-    return jug_1 , jug_2
+    return jug_1, jug_2
 
-def turno():
+def turno_aleatorio():
+    '''
+    Devuelve aleatoriamente 0 o 1 para determinar
+    un turno
+    '''
+
     turno = random.randint(0,1)
     return turno
 
-def cambio_de_turno(turno_inicial):
-    """ 
-        Al finalizar la partida se llama a esta funcion para cambiar el turno 
-    """
-    if turno_inicial == 0:
-        turno_inicial = 1
-    else:
-        turno_inicial = 0
-    return turno_inicial
+def cambio_de_turno(turno_actual):
+    ''' 
+    Al finalizar la partida se llama a esta funcion
+    para cambiar el turno 
+    '''
+
+    return 1 if turno_actual == 0 else 0
 
 #---------------------------control de puntaje-----------------#
 
-# Defino estas variables para que por mediante funciones acumule los puntajes de cada jugador 
-Jugador1_punt = 0
-Jugador2_punt = 0
+def guardar_puntaje(puntaje, ultimo_turno, turno_actual):
+    '''
+    Retorna una tupla con los puntajes correspondientes
+    a cada jugador dependiendo de cual fue el ganador o
+    de si ambos perdieron
 
-def sistema_puntaje(intentos):
-    """
-        Esta funcion tiene un diccionario con la relacion de intentos y puntos
-        devolviendo el valor correspondiente 
-    """
-    valor_puntaje = {0:50,1:40,2:30,3:20,4:10,5:-100} 
-    return valor_puntaje[intentos]
+    - Índice 0: jugador 1
+    - Índice 1: jugador 2
+    '''
 
-def guardar_puntaje (puntaje,turno,turno_inicial):
-
-    """
-        Esta funcion dependiendo de quien fue el ganador o si ambos perdieron, le asigna su puntaje correspondiente y 
-        regresa una tupla de dos numeros, uno para cada jugador. 
-    """
-
-    jugador1punt = 0    # Declarando variables
-
+    jugador1punt = 0
     jugador2punt = 0
-                        # En el caso de si alguno de los dos gano
-    if turno ==0:
+    
+    # Si alguno de los dos ganó establece los
+    # puntajes adecuados a cada jugador dependiendo
+    # de quien haya sido el último turno
+    if ultimo_turno == 0:
         jugador1punt = puntaje
-        jugador2punt = - puntaje
+        jugador2punt = -puntaje
     else:
         jugador2punt = puntaje
         jugador1punt = -puntaje
-                                # En el caso de que ambos perdieron
+
+    # Si ambos perdieron...
     if puntaje == -100:
-        if turno_inicial == 0:
+
+        # Establece los puntajes correspondientes a cada
+        # jugado dependiendo del turno actual. Al jugador
+        # del turno actual se le da un puntaje y al otro
+        # la mitad
+        if turno_actual == 0:
             jugador1punt = puntaje
-            jugador2punt =  round(puntaje / 2)
+            jugador2punt = round(puntaje / 2)
         else:
             jugador2punt = puntaje
             jugador1punt = round(puntaje / 2)
-    return(jugador1punt,jugador2punt)
+
+    return (jugador1punt,jugador2punt)
     
 
 #-----------------------control del juego----------------------------#
 
-# variable de control para el ciclo del juego
+def game_over(gano, minutos_de_juego, segundos_de_juego, palabra_a_adivinar, puntaje_jugador, turno_inicial, ultimo_turno, nombres, puntos_del_jug1, puntos_del_jug2):
+    '''
+    Muestra los resultados de la partida actual para
+    cada jugador desplegando puntajes, pérdidas y
+    ganancias de puntos y tiempo empleado en esa ronda
 
-juego_ = True 
+    Al finalizar pregunta si se quiere volver a jugar
+    otra partida
+    '''
 
-def game_over(gano,minutos_de_juego,segundos_de_juego,palabra_a_adivinar,puntaje_jugador,turno_inicial, ultimo_turno, nombres,puntos_del_jug1,puntos_del_jug2):
-
-    """
-        Esta funcion recibe los resultados del juego actual y muestra al jugador su puntaje final y total
-        y al final le pregunta si quiere volver a jugar
-    """
+    # En caso de que haya un ganador...
     if gano:
+
+        # Imprime el resumen mostrando como ganador
+        # al jugado que haya tenido el último turno
         if ultimo_turno == 0:
-            print (f"\nGanaste {nombres [ultimo_turno]} Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra\n")
-            print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug1} puntos")
-            print(f"EL jugador {nombres[1]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug2}\n")
+            print (f"\nGanaste {nombres[ultimo_turno]}! Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra.\n")
+            print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug1} puntos.")
+            print(f"El jugador {nombres[1]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug2}.\n")
         else:
-            print (f"\nGanaste {nombres [ultimo_turno]} Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra\n")
-            print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug2} puntos")
-            print(f"EL jugador {nombres[0]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug1}\n")
-       # print(f"Ganaste! Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra")
-       # print()
-       # print(f"Obtuviste un total de {puntaje_jugador} puntos,tenes acumulados {puntaje_total_jug}")
+            print (f"\nGanaste {nombres[ultimo_turno]} Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra.\n")
+            print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug2} puntos.")
+            print(f"EL jugador {nombres[0]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug1}.\n")
+
+    # Si ambos perdieron...
     else:
-        #puntaje_jugador = sistema_puntaje(intentos)
-    
-        print(f"\nPerdieron! La palabra era {palabra_a_adivinar}")
-        print()
+        print(f"\nPerdieron! La palabra era {palabra_a_adivinar}.\n")
+
+        # Imprime el resumen mostrando cuantos puntos
+        # perdió cada jugador según cual haya sido el
+        # último
         if turno_inicial == 0:
             print(f"El jugador {nombres[turno_inicial]} perdió un total de 100 y tiene acumulado {puntos_del_jug1}")
             print(f"Y el jugador {nombres[1]} perdió un total de 50 y tiene un total de {puntos_del_jug2}\n")
         else:
             print(f"El jugador {nombres[turno_inicial]} perdió un total de 100 y tiene acumulado {puntos_del_jug2}")
             print(f"Y el jugador {nombres[0]} perdió un total de 50 y tiene un total de {puntos_del_jug1}\n")
-        #print(f"Perdiste un total de 100 puntos, tenes acumulados {puntaje_total_jug}")
 
-    pregunta =""
+    pregunta = ""
     juego = False
+
+    # Solicita al jugador que ingrese si desea jugar
+    # otra partida o no
     while (pregunta != "S") and (pregunta != "N"):
         pregunta = input("Desea jugar otra partida? S/N: ").upper()
-        
-    if pregunta == "S":
 
+    if pregunta == "S":
         juego = True
 
     return juego
@@ -124,6 +139,7 @@ def formatear_letra(letra):
     '''
     Devuelve una letra dada en mayúscula y sin tilde
     '''
+
     letra_formateada = letra
 
     # Evalúa si la letra está en el diccionario de
@@ -169,9 +185,10 @@ def analizar_input(palabra, arriesgo):
     GRIS OSCURO
 
     Retorna una tupla con el siguiente formato:
-    Índice 0: palabra con colores
-    Índice 1: booleano que determina si las palabras son iguales
-    Índice 2: un mensaje explicitando algún error
+    - texto_con_colores: palabra con colores
+    - es_igual: booleano que determina si las palabras son iguales
+    - indices_con_coincidencias: indices coincidentes con el arriesgo
+    - mensaje: un mensaje explicitando algún error
     '''
 
     mensaje = ""
@@ -233,7 +250,7 @@ def analizar_input(palabra, arriesgo):
 
 #-----------------control del juego------------------------#
 
-def raiz(jugadores,turn_actu):
+def partida(jugadores,turno_actual):
     
     # Obtiene una palabra aleatoria de la lista y la normaliza
     palabras_para_adivinar = obtener_palabras_validas()
@@ -276,10 +293,10 @@ def raiz(jugadores,turn_actu):
                 print("?" * len(palabra_a_adivinar))
 
         # Solicita una entrada de una palabra y la analiza
-        if turn_actu == 0:
-            print(f"Es el turno del jugador {jugadores[turn_actu]}")
+        if turno_actual == 0:
+            print(f"Es el turno del jugador {jugadores[turno_actual]}")
         else:
-            print(f"Es el turno del jugador {jugadores[turn_actu]}")
+            print(f"Es el turno del jugador {jugadores[turno_actual]}")
 
         arriesgo = input("Arriesgo: ")
         palabra_analizada = analizar_input(palabra_a_adivinar, arriesgo)
@@ -303,52 +320,82 @@ def raiz(jugadores,turn_actu):
         # adivinar, se gana el juego
         if (palabra_analizada["es_igual"] == True):
             gano = True
-        else:                   #Si no adivino la palabra cambia de turno
-            if turn_actu == 0:
-                turn_actu = 1
-            else:
-                turn_actu = 0  
 
-        #asigna el puntaje dependiendo de los intentos
+        # Caso contrario, simplemente se cambia de turno
+        else:
+            turno_actual = cambio_de_turno(turno_actual)
 
-        puntaje_jugador = sistema_puntaje(intentos)
+        # Asigna el puntaje correspondiente dependiendo
+        # de los intentos
+        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos]
 
         intentos += 1
         
 
-    # esta condicion garantiza que al perder te de el puntaje correspondiente
+    # En caso de que ambos hayan perdido asigna los puntos
+    # negativos correspondientes
     if gano == False:    
-        puntaje_jugador = sistema_puntaje(intentos)
+        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos]
 
-    # Obtiene el tiempo final siguiendo la misma metodología de antes
+    # Obtiene el tiempo final siguiendo la misma metodología
+    # de antes (ms UNIX)
     tiempo_final = time.time()
     segundos_de_juego = int(tiempo_final - tiempo_inicial)
     minutos_de_juego = math.floor(segundos_de_juego / 60)
 
-    # regresar un diccionario con los resultados finales de la partida actual
+    # Retorna un diccionario con los resultados finales de la partida actual
+    return { \
+    "gano": gano, \
+    "minutos_de_juego": minutos_de_juego, \
+    "segundos_de_juego": segundos_de_juego, \
+    "intentos": intentos, \
+    "palabra_a_adivinar": palabra_a_adivinar, \
+    "puntaje_jugador": puntaje_jugador, \
+    "ultimo_turno": turno_actual \
+    }
 
-    return {"gano":gano, "minutos_de_juego":minutos_de_juego, "segundos_de_juego":segundos_de_juego,
-    "intentos":intentos,"palabra_a_adivinar":palabra_a_adivinar, "puntaje_jugador":puntaje_jugador, "ultimo_turno":turn_actu}
 
-# inicio del juego
+def juego():
+    '''
+    Instancia el juego
+    '''
 
-NOMBRES_JUGADORES = dos_jug() #Guarda una tupla con los dos nombres
+    # Variables que contendrán los puntajes de cada jugador
+    Jugador1_punt = 0
+    Jugador2_punt = 0
 
-turno_inicial = turno() #Guarda el valor del primer turno dado,  que despues me va a servir para cambiarla al volver
-                        #empezar el juego
+    # Solicita los nombres de ambos jugadores y los guarda
+    # en una tupla
+    NOMBRES_JUGADORES = solicitar_nombres_jugadores()
 
-while juego_:
+    # Establece el turno de uno de los jugadores de manera
+    # aleatoria
+    turno = turno_aleatorio()
+                            
+    # Ciclo del juego
+    juego_activo = True
+    while juego_activo:
 
-    resultado = raiz(NOMBRES_JUGADORES,turno_inicial) # Esta variable guarada el diccionario que regresa la funcion con todos los datos de la partida
+        # Obtiene los resultados de la partida
+        resultado = partida(NOMBRES_JUGADORES,turno) 
 
-    puntajes_finales = guardar_puntaje(resultado["puntaje_jugador"],resultado["ultimo_turno"],turno_inicial) 
+        # Genera los puntajes correspondientes para cada
+        # jugador en formato de tupla
+        puntajes_finales = guardar_puntaje(resultado["puntaje_jugador"],resultado["ultimo_turno"],turno) 
 
-    Jugador1_punt += puntajes_finales[0]
-    Jugador2_punt += puntajes_finales[1]
+        # Asigna los puntajes obtenidos a cada jugador
+        Jugador1_punt += puntajes_finales[0]
+        Jugador2_punt += puntajes_finales[1]
 
-    juego_ = game_over(resultado["gano"],resultado["minutos_de_juego"],
-        resultado["segundos_de_juego"],resultado["palabra_a_adivinar"],
-        resultado["puntaje_jugador"],turno_inicial, resultado["ultimo_turno"], 
-        NOMBRES_JUGADORES,Jugador1_punt,Jugador2_punt) 
+        # Imprime los resultados y pregunta si se quiere
+        # volver a jugar
+        juego_activo = game_over(resultado["gano"], resultado["minutos_de_juego"],
+            resultado["segundos_de_juego"], resultado["palabra_a_adivinar"],
+            resultado["puntaje_jugador"], turno, resultado["ultimo_turno"], 
+            NOMBRES_JUGADORES, Jugador1_punt, Jugador2_punt)
 
-    turno_inicial = cambio_de_turno(turno_inicial)
+        # Cambia de turno
+        turno = cambio_de_turno(turno)
+
+
+juego()
