@@ -276,7 +276,7 @@ def partida(jugadores,turno_actual):
     # Obtiene una palabra aleatoria de la lista y la normaliza
     palabras_para_adivinar = obtener_palabras_validas()
     indice_palabra = random.randint(0, len(palabras_para_adivinar) - 1)
-    palabra_a_adivinar = formatear_palabra(palabras_para_adivinar[indice_palabra])
+    palabra_a_adivinar = "TOMAR"
 
     # Listado de palabras introducidas por el jugador
     palabras_intentadas = []
@@ -286,6 +286,10 @@ def partida(jugadores,turno_actual):
 
     intentos = 0
     gano = False
+
+    # Inicia el conteo de tiempo desde el segundo acutal en
+    # el sistema epoch (UNIX)
+    tiempo_inicial = time.time()
 
     while (intentos < INTENTOS_MAXIMOS and gano == False):
 
@@ -349,10 +353,6 @@ def partida(jugadores,turno_actual):
     # negativos correspondientes
     if gano == False:    
         puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos]
-
-    # Inicia el conteo de tiempo desde el segundo acutal en
-    # el sistema epoch (UNIX)
-    tiempo_inicial = time.time()
 
     # Obtiene el tiempo final siguiendo la misma metodología
     # de antes (ms UNIX)
