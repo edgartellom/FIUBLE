@@ -81,7 +81,61 @@ def guardar_puntaje(puntaje, ultimo_turno, turno_actual):
 
 #-----------------------control del juego----------------------------#
 
-def game_over(nombres, puntos_del_jug1, puntos_del_jug2, resultado):
+def preguntar_jugar_de_nuevo():
+    '''
+    Solicita al jugador que ingrese S (si) o N (no)
+    dependiendo de si desea seguir jugando
+    '''
+
+    # Variable para almacenar la respuesta
+    respuesta = ""
+
+    # Solicita que ingrese S o N
+    while (respuesta != "S") and (respuesta != "N"):
+        respuesta = input("Desea jugar otra partida? S/N: ").upper()
+
+    return respuesta == "S"
+
+def imprimir_ganador(nombres, puntos, resultado):
+    '''
+    Imprime el resumen mostrando como ganador
+    al jugado que haya tenido el último turno
+    '''
+
+    # Obtiene los datos resultantes de la partida
+    ultimo_turno = resultado["ultimo_turno"]
+    minutos_de_juego = resultado["minutos_de_juego"]
+    segundos = resultado["segundos_de_juego"] - (minutos_de_juego * 60)
+    puntaje_jugador = resultado["puntaje_jugador"]
+
+    # Obtiene los índices de los jugadores
+    ganador = JUGADOR_1 if ultimo_turno == JUGADOR_1 else JUGADOR_2
+    perdedor = JUGADOR_2 if ultimo_turno == JUGADOR_1 else JUGADOR_1
+
+    print (f"\nGanaste {nombres[ganador]}! Tardaste {minutos_de_juego} minutos y {segundos} segundos en adivinar la palabra.\n")
+    print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos[ganador]} puntos.")
+    print(f"El jugador {nombres[perdedor]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos[perdedor]}.\n")
+
+def imprimir_perdedores(nombres, puntos, resultado):
+    '''
+    Imprime el resumen mostrando cuantos puntos
+    perdió cada jugador según cual haya sido el
+    primero
+    '''
+
+    # Obtiene cual jugador se va a imprimir primero
+    # dependiendo del turno inicial que es aleatorio
+    primero = TURNO_INICIAL
+    segundo = JUGADOR_1 if TURNO_INICIAL == JUGADOR_2 else JUGADOR_2
+    
+    # Extrae la palabra a adivinar del resultado
+    palabra_a_adivinar = resultado["palabra_a_adivinar"]
+
+    print(f"\nPerdieron! La palabra era {palabra_a_adivinar}.\n")
+    print(f"El jugador {nombres[primero]} perdió un total de 100 y tiene acumulado {puntos[primero]}")
+    print(f"Y el jugador {nombres[segundo]} perdió un total de 50 y tiene un total de {puntos[segundo]}\n")
+
+def imprimir_resultados(nombres, puntos, resultado):
     '''
     Muestra los resultados de la partida actual para
     cada jugador desplegando puntajes, pérdidas y
@@ -90,53 +144,15 @@ def game_over(nombres, puntos_del_jug1, puntos_del_jug2, resultado):
     Al finalizar pregunta si se quiere volver a jugar
     otra partida
     '''
-    gano = resultado["gano"]
-    ultimo_turno = resultado["ultimo_turno"]
-    minutos_de_juego = resultado["minutos_de_juego"]
-    segundos = resultado["segundos_de_juego"] - (minutos_de_juego * 60)
-    puntaje_jugador = resultado["puntaje_jugador"]
-    palabra_a_adivinar = resultado["palabra_a_adivinar"]
 
-    # En caso de que haya un ganador...
-    if gano:
-
-        # Imprime el resumen mostrando como ganador
-        # al jugado que haya tenido el último turno
-        if ultimo_turno == JUGADOR_1:
-            print (f"\nGanaste {nombres[ultimo_turno]}! Tardaste {minutos_de_juego} minutos y {segundos} segundos en adivinar la palabra.\n")
-            print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug1} puntos.")
-            print(f"El jugador {nombres[JUGADOR_2]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug2}.\n")
-        else:
-            print (f"\nGanaste {nombres[ultimo_turno]} Tardaste {minutos_de_juego} minutos y {segundos} segundos en adivinar la palabra.\n")
-            print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug2} puntos.")
-            print(f"EL jugador {nombres[JUGADOR_1]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos_del_jug1}.\n")
-
-    # Si ambos perdieron...
+    # Extrae el bool de si alguien ganó
+    hay_ganador = resultado["gano"]
+    
+    # Imprime el resultado de la partida
+    if hay_ganador:
+        imprimir_ganador(nombres, puntos, resultado)
     else:
-        print(f"\nPerdieron! La palabra era {palabra_a_adivinar}.\n")
-
-        # Imprime el resumen mostrando cuantos puntos
-        # perdió cada jugador según cual haya sido el
-        # primero
-        if TURNO_INICIAL == JUGADOR_2:
-            print(f"El jugador {nombres[TURNO_INICIAL]} perdió un total de 100 y tiene acumulado {puntos_del_jug2}")
-            print(f"Y el jugador {nombres[JUGADOR_1]} perdió un total de 50 y tiene un total de {puntos_del_jug1}\n")
-        else:
-            print(f"El jugador {nombres[TURNO_INICIAL]} perdió un total de 100 y tiene acumulado {puntos_del_jug1}")
-            print(f"Y el jugador {nombres[JUGADOR_2]} perdió un total de 50 y tiene un total de {puntos_del_jug2}\n")
-
-    pregunta = ""
-    nuevo_juego = False
-
-    # Solicita al jugador que ingrese si desea jugar
-    # otra partida o no
-    while (pregunta != "S") and (pregunta != "N"):
-        pregunta = input("Desea jugar otra partida? S/N: ").upper()
-
-    if pregunta == "S":
-        nuevo_juego = True
-
-    return nuevo_juego
+        imprimir_perdedores(nombres, puntos, resultado)
 
 #-----------------control de letras-------------------------#
 
@@ -362,8 +378,9 @@ def juego():
     '''
 
     # Variables que contendrán los puntajes de cada jugador
-    Jugador1_punt = 0
-    Jugador2_punt = 0
+    # puntos[JUGADOR_1] = 0
+    # puntos[JUGADOR_2] = 0
+    puntos = [0, 0]
 
     # Solicita los nombres de ambos jugadores y los guarda
     # en una tupla
@@ -378,19 +395,21 @@ def juego():
     while juego_activo:
 
         # Obtiene los resultados de la partida
-        resultado = partida(nombres_jugadores,turno) 
+        resultado = partida(nombres_jugadores, turno) 
 
         # Genera los puntajes correspondientes para cada
         # jugador en formato de tupla
         puntajes_finales = guardar_puntaje(resultado["puntaje_jugador"],resultado["ultimo_turno"],turno) 
 
         # Acumula los puntajes obtenidos por cada jugador
-        Jugador1_punt += puntajes_finales[JUGADOR_1]
-        Jugador2_punt += puntajes_finales[JUGADOR_2]
+        puntos[JUGADOR_1] += puntajes_finales[JUGADOR_1]
+        puntos[JUGADOR_2] += puntajes_finales[JUGADOR_2]
 
-        # Imprime los resultados y pregunta si se quiere
-        # volver a jugar
-        juego_activo = game_over(nombres_jugadores, Jugador1_punt, Jugador2_punt, resultado)
+        # Muestra los resultados de la partida
+        imprimir_resultados(nombres_jugadores, puntos, resultado)
+
+        # Pregunta si se quiere jugar de nuevo
+        juego_activo = preguntar_jugar_de_nuevo()
 
         # Cambia de turno
         turno = cambio_de_turno(turno)
