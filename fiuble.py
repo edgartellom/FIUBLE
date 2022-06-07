@@ -116,7 +116,7 @@ def imprimir_ganador(nombres, puntos, resultado):
     print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos[ganador]} puntos.")
     print(f"El jugador {nombres[perdedor]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos[perdedor]}.\n")
 
-def imprimir_perdedores(nombres, puntos, resultado):
+def imprimir_perdedores(nombres, puntos, resultado, primer_turno):
     '''
     Imprime el resumen mostrando cuantos puntos
     perdió cada jugador según cual haya sido el
@@ -125,7 +125,7 @@ def imprimir_perdedores(nombres, puntos, resultado):
 
     # Obtiene cual jugador se va a imprimir primero
     # dependiendo del turno inicial que es aleatorio
-    primero = TURNO_INICIAL
+    primero = primer_turno
     segundo = JUGADOR_1 if TURNO_INICIAL == JUGADOR_2 else JUGADOR_2
     
     # Extrae la palabra a adivinar del resultado
@@ -135,7 +135,7 @@ def imprimir_perdedores(nombres, puntos, resultado):
     print(f"El jugador {nombres[primero]} perdió un total de 100 y tiene acumulado {puntos[primero]}")
     print(f"Y el jugador {nombres[segundo]} perdió un total de 50 y tiene un total de {puntos[segundo]}\n")
 
-def imprimir_resultados(nombres, puntos, resultado):
+def imprimir_resultados(nombres, puntos, resultado, primer_turno):
     '''
     Muestra los resultados de la partida actual para
     cada jugador desplegando puntajes, pérdidas y
@@ -152,7 +152,7 @@ def imprimir_resultados(nombres, puntos, resultado):
     if hay_ganador:
         imprimir_ganador(nombres, puntos, resultado)
     else:
-        imprimir_perdedores(nombres, puntos, resultado)
+        imprimir_perdedores(nombres, puntos, resultado, primer_turno)
 
 #-----------------control de letras-------------------------#
 
@@ -406,7 +406,7 @@ def juego():
         puntos[JUGADOR_2] += puntajes_finales[JUGADOR_2]
 
         # Muestra los resultados de la partida
-        imprimir_resultados(nombres_jugadores, puntos, resultado)
+        imprimir_resultados(nombres_jugadores, puntos, resultado, turno)
 
         # Pregunta si se quiere jugar de nuevo
         juego_activo = preguntar_jugar_de_nuevo()
