@@ -276,7 +276,7 @@ def partida(jugadores,turno_actual):
     # Obtiene una palabra aleatoria de la lista y la normaliza
     palabras_para_adivinar = obtener_palabras_validas()
     indice_palabra = random.randint(0, len(palabras_para_adivinar) - 1)
-    palabra_a_adivinar = "TOMAR"
+    palabra_a_adivinar = formatear_palabra(palabras_para_adivinar[indice_palabra])
 
     # Listado de palabras introducidas por el jugador
     palabras_intentadas = []
