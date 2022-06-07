@@ -1,10 +1,160 @@
+from utiles import *
 import random
 import time
 import math
-from utiles import *
+
+# Constantes
 INTENTOS_MAXIMOS = 5
 REEMPLAZOS_TILDES = { "á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u" }
+PUNTAJE_POR_INTENTOS = {0: 50, 1: 40, 2: 30, 3: 20, 4: 10, 5: -100}
 
+#Indices de jugador
+JUGADOR_1 = 0
+JUGADOR_2 = 1
+
+#Turno aleatorio
+TURNO_INICIAL = random.randint(0,1)
+
+
+#------------control de dos jugadores-------------------------#
+
+def solicitar_nombres_jugadores():
+    '''
+    Solicita los nombres de los jugadores y los
+    retorna empaquetados
+    '''
+
+    jug_1 = input("Ingrese el nombre del jugador 1: ")
+    jug_2 = input("Ingrese el nombre del jugador 2: ")
+    return jug_1, jug_2
+
+def cambio_de_turno(turno_actual):
+    ''' 
+    Al finalizar la partida se llama a esta funcion
+    para cambiar el turno 
+    '''
+
+    return JUGADOR_2 if turno_actual == JUGADOR_1 else JUGADOR_1
+
+#---------------------------control de puntaje-----------------#
+
+def guardar_puntaje(puntaje, ultimo_turno, turno_actual):
+    '''
+    Retorna una tupla con los puntajes correspondientes
+    a cada jugador dependiendo de cual fue el ganador o
+    de si ambos perdieron
+
+    - Índice 0: jugador 1
+    - Índice 1: jugador 2
+    '''
+
+    jugador1punt = 0
+    jugador2punt = 0
+    
+    # Si alguno de los dos ganó establece los
+    # puntajes adecuados a cada jugador dependiendo
+    # de quien haya sido el último turno
+    
+    if ultimo_turno == JUGADOR_1:
+        jugador1punt = puntaje
+        jugador2punt = -puntaje
+    else:
+        jugador2punt = puntaje
+        jugador1punt = -puntaje
+
+    # Si ambos perdieron...
+    if puntaje == -100:
+
+        # Establece los puntajes correspondientes a cada
+        # jugado dependiendo del turno actual. Al jugador
+        # del turno actual se le da un puntaje y al otro
+        # la mitad
+        if turno_actual == JUGADOR_1:
+            jugador1punt = puntaje
+            jugador2punt = round(puntaje / 2)
+        else:
+            jugador2punt = puntaje
+            jugador1punt = round(puntaje / 2)
+
+    return (jugador1punt,jugador2punt)
+    
+
+#-----------------------control del juego----------------------------#
+
+def preguntar_jugar_de_nuevo():
+    '''
+    Solicita al jugador que ingrese S (si) o N (no)
+    dependiendo de si desea seguir jugando
+    '''
+
+    # Variable para almacenar la respuesta
+    respuesta = ""
+
+    # Solicita que ingrese S o N
+    while (respuesta != "S") and (respuesta != "N"):
+        respuesta = input("Desea jugar otra partida? S/N: ").upper()
+
+    return respuesta == "S"
+
+def imprimir_ganador(nombres, puntos, resultado):
+    '''
+    Imprime el resumen mostrando como ganador
+    al jugado que haya tenido el último turno
+    '''
+
+    # Obtiene los datos resultantes de la partida
+    ultimo_turno = resultado["ultimo_turno"]
+    minutos_de_juego = resultado["minutos_de_juego"]
+    segundos = resultado["segundos_de_juego"] - (minutos_de_juego * 60)
+    puntaje_jugador = resultado["puntaje_jugador"]
+
+    # Obtiene los índices de los jugadores
+    ganador = JUGADOR_1 if ultimo_turno == JUGADOR_1 else JUGADOR_2
+    perdedor = JUGADOR_2 if ultimo_turno == JUGADOR_1 else JUGADOR_1
+
+    print (f"\nGanaste {nombres[ganador]}! Tardaste {minutos_de_juego} minutos y {segundos} segundos en adivinar la palabra.\n")
+    print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos[ganador]} puntos.")
+    print(f"El jugador {nombres[perdedor]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos[perdedor]}.\n")
+
+def imprimir_perdedores(nombres, puntos, resultado):
+    '''
+    Imprime el resumen mostrando cuantos puntos
+    perdió cada jugador según cual haya sido el
+    primero
+    '''
+
+    # Obtiene cual jugador se va a imprimir primero
+    # dependiendo del turno inicial que es aleatorio
+    primero = TURNO_INICIAL
+    segundo = JUGADOR_1 if TURNO_INICIAL == JUGADOR_2 else JUGADOR_2
+    
+    # Extrae la palabra a adivinar del resultado
+    palabra_a_adivinar = resultado["palabra_a_adivinar"]
+
+    print(f"\nPerdieron! La palabra era {palabra_a_adivinar}.\n")
+    print(f"El jugador {nombres[primero]} perdió un total de 100 y tiene acumulado {puntos[primero]}")
+    print(f"Y el jugador {nombres[segundo]} perdió un total de 50 y tiene un total de {puntos[segundo]}\n")
+
+def imprimir_resultados(nombres, puntos, resultado):
+    '''
+    Muestra los resultados de la partida actual para
+    cada jugador desplegando puntajes, pérdidas y
+    ganancias de puntos y tiempo empleado en esa ronda
+
+    Al finalizar pregunta si se quiere volver a jugar
+    otra partida
+    '''
+
+    # Extrae el bool de si alguien ganó
+    hay_ganador = resultado["gano"]
+    
+    # Imprime el resultado de la partida
+    if hay_ganador:
+        imprimir_ganador(nombres, puntos, resultado)
+    else:
+        imprimir_perdedores(nombres, puntos, resultado)
+
+#-----------------control de letras-------------------------#
 
 def formatear_letra(letra):
     '''
@@ -23,6 +173,7 @@ def formatear_letra(letra):
 
     return letra_formateada
 
+#-----------------control de palabras-----------------------#
 
 def formatear_palabra(palabra):
     '''
@@ -38,6 +189,7 @@ def formatear_palabra(palabra):
 
     return palabra_formateada
 
+#-----------control del ingreso ----------------------------#
 
 def analizar_input(palabra, arriesgo):
     '''
@@ -54,9 +206,10 @@ def analizar_input(palabra, arriesgo):
     GRIS OSCURO
 
     Retorna una tupla con el siguiente formato:
-    Índice 0: palabra con colores
-    Índice 1: booleano que determina si las palabras son iguales
-    Índice 2: un mensaje explicitando algún error
+    - texto_con_colores: palabra con colores
+    - es_igual: booleano que determina si las palabras son iguales
+    - indices_con_coincidencias: indices coincidentes con el arriesgo
+    - mensaje: un mensaje explicitando algún error
     '''
 
     mensaje = ""
@@ -77,8 +230,7 @@ def analizar_input(palabra, arriesgo):
 
         # Valida que la letra no sea un caracter especial o numérico
         if not arriesgo[indice].isalpha():
-            mensaje = "El caracter \"" + arriesgo[indice] + "\" es inválido"
-            #mensaje = "La palabra es inválida. No se permiten números ni caracteres especiales"
+            mensaje = f"La palabra {arriesgo} es inválida. No debe contener caracteres especiales ni numéricos."
             es_palabra_valida = False
 
         # Normaliza la letra
@@ -117,90 +269,149 @@ def analizar_input(palabra, arriesgo):
     "mensaje": mensaje \
     }
 
+#-----------------control del juego------------------------#
 
-def raiz():
-
-    respuesta = ""
-
-    while respuesta != "N":
+def partida(jugadores,turno_actual):
     
-        # Obtiene una palabra aleatoria de la lista y la normaliza
-        palabras_para_adivinar = obtener_palabras_validas()
-        indice_palabra = random.randint(0, len(palabras_para_adivinar) - 1)
-        palabra_a_adivinar = formatear_palabra(palabras_para_adivinar[indice_palabra])
+    # Obtiene una palabra aleatoria de la lista y la normaliza
+    palabras_para_adivinar = obtener_palabras_validas()
+    indice_palabra = random.randint(0, len(palabras_para_adivinar) - 1)
+    palabra_a_adivinar = formatear_palabra(palabras_para_adivinar[indice_palabra])
 
-        # Listado de palabras introducidas por el jugador
-        palabras_intentadas = []
-        
+    # Listado de palabras introducidas por el jugador
+    palabras_intentadas = []
 
-        # Listado de índices de la palabra descubiertos
-        palabra_revelada = [False for x in range(5)]
+    # Listado de índices de la palabra descubiertos
+    palabra_revelada = [False for x in range(5)]
 
+    intentos = 0
+    gano = False
 
-        intentos = 0
-        gano = False
+    while (intentos < INTENTOS_MAXIMOS and gano == False):
 
-        # Inicia el conteo de tiempo desde el segundo acutal en
-        # el sistema epoch (UNIX)
-        tiempo_inicial = time.time()
-    
-        while (intentos < INTENTOS_MAXIMOS and gano == False):
-
-            # Construye el string de la palabra a adivinar
-            # dependiendo de las coincidencias que haya en los
-            # listados
-            progreso_palabra = ""
-            for indice, letra in enumerate(palabra_a_adivinar):
-                if palabra_revelada[indice] == True:
-                    progreso_palabra += letra
-                else:
-                    progreso_palabra += "?"
-
-            print("\n\nPalabra a adivinar: " + progreso_palabra)
-
-            # Imprime todas las palabras intentadas por el jugador
-            for indice_intento in range(5):
-                if (indice_intento < len(palabras_intentadas)):
-                    print(palabras_intentadas[indice_intento])
-                else:
-                    print("?" * len(palabra_a_adivinar))
-
-            # Solicita una entrada de una palabra y la analiza
-            arriesgo = input("Arriesgo: ")
-            palabra_analizada = analizar_input(palabra_a_adivinar, arriesgo)
-
-            # La añade al listado de palabras arriesgadas
-            palabras_intentadas.append(palabra_analizada["texto_con_colores"])
-
-            # Si la palabra ingresada por el jugador no de ningún
-            # problema, imprime con colores la palabra que arriesgó,
-            # y actualiza los índices de las coincidencias encontradas
-            if palabra_analizada["mensaje"] == "":
-                print("Palabra arriesgada: " + palabra_analizada["texto_con_colores"])
-                for indice_coincidencia in palabra_analizada["indices_con_coincidencias"]:
-                    palabra_revelada[indice_coincidencia] = True
-
-            # Caso contrario, imprime el problema que tiene esa palabra
+        # Construye el string de la palabra a adivinar
+        # dependiendo de las coincidencias que haya en los
+        # listados
+        progreso_palabra = ""
+        for indice, letra in enumerate(palabra_a_adivinar):
+            if palabra_revelada[indice] == True:
+                progreso_palabra += letra
             else:
-                print(palabra_analizada["mensaje"])
+                progreso_palabra += "?"
 
-            # Si la palabra coincide perfectamente con la palabra a
-            # adivinar, se gana el juego
-            if (palabra_analizada["es_igual"] == True):
-                gano = True
+        print("\n\nPalabra a adivinar: " + progreso_palabra)
 
-            intentos += 1
+        # Imprime todas las palabras intentadas por el jugador
+        for indice_intento in range(5):
+            if (indice_intento < len(palabras_intentadas)):
+                print(palabras_intentadas[indice_intento])
+            else:
+                print("?" * len(palabra_a_adivinar))
 
-        # Obtiene el tiempo final siguiendo la misma metodología de antes
-        tiempo_final = time.time()
-
-        if gano:
-            segundos_de_juego = int(tiempo_final - tiempo_inicial)
-            minutos_de_juego = math.floor(segundos_de_juego / 60)
-            print(f"Ganaste! Tardaste {minutos_de_juego} minutos y {segundos_de_juego - (minutos_de_juego * 60)} segundos en adivinar la palabra")
-        else:
-            print(f"Perdiste! La palabra era {palabra_a_adivinar}")
-            
-        respuesta = (input ("Desea jugar otra partida? (S/N)")).upper()
+        #Imprime un mensaje que indica de quien es el turno
+        print(f"Es el turno del jugador {jugadores[turno_actual]}")
         
-raiz()
+        # Solicita una entrada de una palabra y la analiza
+        arriesgo = input("Arriesgo: ")
+        palabra_analizada = analizar_input(palabra_a_adivinar, arriesgo)
+
+        # La añade al listado de palabras arriesgadas
+        palabras_intentadas.append(palabra_analizada["texto_con_colores"])
+
+        # Si la palabra ingresada por el jugador no da ningún
+        # problema, imprime con colores la palabra que arriesgó,
+        # y actualiza los índices de las coincidencias encontradas
+        if palabra_analizada["mensaje"] == "":
+            print("Palabra arriesgada: " + palabra_analizada["texto_con_colores"])
+            for indice_coincidencia in palabra_analizada["indices_con_coincidencias"]:
+                palabra_revelada[indice_coincidencia] = True
+
+        # Caso contrario, imprime el problema que tiene esa palabra
+        else:
+            print(palabra_analizada["mensaje"])
+
+        # Si la palabra coincide perfectamente con la palabra a
+        # adivinar, se gana el juego
+        if (palabra_analizada["es_igual"] == True):
+            gano = True
+
+        # Caso contrario, simplemente se cambia de turno
+        else:
+            turno_actual = cambio_de_turno(turno_actual)
+
+        # Asigna el puntaje correspondiente dependiendo
+        # de los intentos
+        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos]
+
+        intentos += 1
+        
+    # En caso de que ambos hayan perdido asigna los puntos
+    # negativos correspondientes
+    if gano == False:    
+        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos]
+
+    # Inicia el conteo de tiempo desde el segundo acutal en
+    # el sistema epoch (UNIX)
+    tiempo_inicial = time.time()
+
+    # Obtiene el tiempo final siguiendo la misma metodología
+    # de antes (ms UNIX)
+    tiempo_final = time.time()
+    segundos_de_juego = int(tiempo_final - tiempo_inicial)
+    minutos_de_juego = math.floor(segundos_de_juego / 60)
+
+    # Retorna un diccionario con los resultados finales de la partida actual
+    return { \
+    "gano": gano, \
+    "minutos_de_juego": minutos_de_juego, \
+    "segundos_de_juego": segundos_de_juego, \
+    "intentos": intentos, \
+    "palabra_a_adivinar": palabra_a_adivinar, \
+    "puntaje_jugador": puntaje_jugador, \
+    "ultimo_turno": turno_actual \
+    }
+
+
+def juego():
+    '''
+    Instancia el juego
+    '''
+
+    # Variables que contendrán los puntajes de cada jugador
+    # puntos[JUGADOR_1] = 0
+    # puntos[JUGADOR_2] = 0
+    puntos = [0, 0]
+
+    # Solicita los nombres de ambos jugadores y los guarda
+    # en una tupla
+    nombres_jugadores = solicitar_nombres_jugadores()
+
+    # Establece el turno de uno de los jugadores de manera
+    # aleatoria
+    turno = TURNO_INICIAL
+                            
+    # Ciclo del juego
+    juego_activo = True
+    while juego_activo:
+
+        # Obtiene los resultados de la partida
+        resultado = partida(nombres_jugadores, turno) 
+
+        # Genera los puntajes correspondientes para cada
+        # jugador en formato de tupla
+        puntajes_finales = guardar_puntaje(resultado["puntaje_jugador"],resultado["ultimo_turno"],turno) 
+
+        # Acumula los puntajes obtenidos por cada jugador
+        puntos[JUGADOR_1] += puntajes_finales[JUGADOR_1]
+        puntos[JUGADOR_2] += puntajes_finales[JUGADOR_2]
+
+        # Muestra los resultados de la partida
+        imprimir_resultados(nombres_jugadores, puntos, resultado)
+
+        # Pregunta si se quiere jugar de nuevo
+        juego_activo = preguntar_jugar_de_nuevo()
+
+        # Cambia de turno
+        turno = cambio_de_turno(turno)
+
+juego()
