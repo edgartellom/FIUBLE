@@ -124,9 +124,9 @@ def imprimir_perdedores(nombres, puntos, resultado, primer_turno):
     '''
 
     # Obtiene cual jugador se va a imprimir primero
-    # dependiendo del turno inicial que es aleatorio
+    # dependiendo del primer turno
     primero = primer_turno
-    segundo = JUGADOR_1 if TURNO_INICIAL == JUGADOR_2 else JUGADOR_2
+    segundo = JUGADOR_1 if primer_turno == JUGADOR_2 else JUGADOR_2
     
     # Extrae la palabra a adivinar del resultado
     palabra_a_adivinar = resultado["palabra_a_adivinar"]
