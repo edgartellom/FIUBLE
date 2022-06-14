@@ -5,15 +5,12 @@ import math
 
 # Constantes
 INTENTOS_MAXIMOS = 5
-REEMPLAZOS_TILDES = { "á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u" }
+REEMPLAZOS_TILDES = { "Á": "A", "É": "E", "Í": "I", "Ó": "O", "Ú": "U" }
 PUNTAJE_POR_INTENTOS = {0: 50, 1: 40, 2: 30, 3: 20, 4: 10, 5: -100}
 
 #Indices de jugador
 JUGADOR_1 = 0
 JUGADOR_2 = 1
-
-#Turno aleatorio
-TURNO_INICIAL = random.randint(0,1)
 
 
 #------------control de dos jugadores-------------------------#
@@ -163,13 +160,14 @@ def formatear_letra(letra):
 
     letra_formateada = letra
 
+    # Convierte la letra a mayúscula
+    if letra_formateada.islower():
+        letra_formateada = letra_formateada.upper()
+
     # Evalúa si la letra está en el diccionario de
     # tildes y le asigna su par sin tilde
-    if letra in REEMPLAZOS_TILDES:
-        letra_formateada = REEMPLAZOS_TILDES[letra]
-
-    # Convierte la letra a mayúscula
-    letra_formateada = letra_formateada.upper()
+    if letra_formateada in REEMPLAZOS_TILDES:
+        letra_formateada = REEMPLAZOS_TILDES[letra_formateada]
 
     return letra_formateada
 
@@ -193,6 +191,34 @@ def formatear_palabra(palabra):
 
 def analizar_input(palabra, arriesgo):
     '''
+    Retorna una tupla con el siguiente formato:
+    - es_igual: booleano que determina si las palabras son iguales
+    - es_palabra_valida: booleano que determina si el arriesgo es válido
+    - mensaje: un mensaje explicitando algún error
+    '''
+
+    mensaje = ""
+    es_palabra_valida = True
+    
+
+    # Primero, medimos si la longitud de las palabras coinciden
+    if len(palabra) != len(arriesgo):
+        mensaje = "La palabra debe ser de 5 letras"
+        es_palabra_valida = False
+    else:
+        # Valida que el arriesgo no contenga un caracter especial o numérico
+        if not arriesgo.isalpha():
+            mensaje = f"La palabra {arriesgo} es inválida. No debe contener caracteres especiales ni numéricos."
+            es_palabra_valida = False
+    
+    return { \
+    "es_igual": palabra == arriesgo, \
+    "es_palabra_valida": es_palabra_valida, \
+    "mensaje": mensaje \
+    }
+
+def pintar_arriesgo(palabra, arriesgo):
+    '''
     Realiza una iteración letra a letra a los efectos de
     darles color dependiendo de la posición de cada una.
 
@@ -207,31 +233,18 @@ def analizar_input(palabra, arriesgo):
 
     Retorna una tupla con el siguiente formato:
     - texto_con_colores: palabra con colores
-    - es_igual: booleano que determina si las palabras son iguales
     - indices_con_coincidencias: indices coincidentes con el arriesgo
-    - mensaje: un mensaje explicitando algún error
     '''
 
-    mensaje = ""
-    es_palabra_valida = True
     texto_con_colores = ""
     texto_sin_colores = ""
     indices_con_coincidencias = []
-
-    # Primero, medimos si la longitud de las palabras coinciden
-    if len(palabra) != len(arriesgo):
-        mensaje = "La palabra debe ser de 5 letras"
-        es_palabra_valida = False
-
-    # Realiza una iteración letra por letra teniendo en cuenta
-    # la posición de la misma
     indice = 0
-    while(indice < len(arriesgo) and es_palabra_valida):
 
-        # Valida que la letra no sea un caracter especial o numérico
-        if not arriesgo[indice].isalpha():
-            mensaje = f"La palabra {arriesgo} es inválida. No debe contener caracteres especiales ni numéricos."
-            es_palabra_valida = False
+    validacion = analizar_input(palabra, arriesgo)
+    es_palabra_valida = validacion["es_palabra_valida"]
+
+    while(indice < len(arriesgo) and es_palabra_valida):
 
         # Normaliza la letra
         letra_arriesgo_normalizada = formatear_letra(arriesgo[indice])
@@ -264,9 +277,7 @@ def analizar_input(palabra, arriesgo):
 
     return { \
     "texto_con_colores": texto_con_colores, \
-    "es_igual": palabra == texto_sin_colores, \
     "indices_con_coincidencias": indices_con_coincidencias, \
-    "mensaje": mensaje \
     }
 
 #-----------------control del juego------------------------#
@@ -275,9 +286,8 @@ def partida(jugadores,turno_actual):
     
     # Obtiene una palabra aleatoria de la lista y la normaliza
     palabras_para_adivinar = obtener_palabras_validas()
-    indice_palabra = random.randint(0, len(palabras_para_adivinar) - 1)
-    palabra_a_adivinar = formatear_palabra(palabras_para_adivinar[indice_palabra])
-
+    palabra_random = random.choice(palabras_para_adivinar)
+    palabra_a_adivinar = formatear_palabra(palabra_random)
     # Listado de palabras introducidas por el jugador
     palabras_intentadas = []
 
@@ -317,7 +327,8 @@ def partida(jugadores,turno_actual):
         
         # Solicita una entrada de una palabra y la analiza
         arriesgo = input("Arriesgo: ")
-        palabra_analizada = analizar_input(palabra_a_adivinar, arriesgo)
+        palabra_analizada = pintar_arriesgo(palabra_a_adivinar, arriesgo)
+        analisis = analizar_input(palabra_a_adivinar, arriesgo)
 
         # La añade al listado de palabras arriesgadas
         palabras_intentadas.append(palabra_analizada["texto_con_colores"])
@@ -325,18 +336,18 @@ def partida(jugadores,turno_actual):
         # Si la palabra ingresada por el jugador no da ningún
         # problema, imprime con colores la palabra que arriesgó,
         # y actualiza los índices de las coincidencias encontradas
-        if palabra_analizada["mensaje"] == "":
+        if analisis["mensaje"] == "":
             print("Palabra arriesgada: " + palabra_analizada["texto_con_colores"])
             for indice_coincidencia in palabra_analizada["indices_con_coincidencias"]:
                 palabra_revelada[indice_coincidencia] = True
 
         # Caso contrario, imprime el problema que tiene esa palabra
         else:
-            print(palabra_analizada["mensaje"])
+            print(analisis["mensaje"])
 
         # Si la palabra coincide perfectamente con la palabra a
         # adivinar, se gana el juego
-        if (palabra_analizada["es_igual"] == True):
+        if (analisis["es_igual"] == True):
             gano = True
 
         # Caso contrario, simplemente se cambia de turno
@@ -388,7 +399,7 @@ def juego():
 
     # Establece el turno de uno de los jugadores de manera
     # aleatoria
-    turno = TURNO_INICIAL
+    turno = random.randint(0,1)
                             
     # Ciclo del juego
     juego_activo = True
