@@ -96,7 +96,7 @@ def preguntar_jugar_de_nuevo():
 def imprimir_ganador(nombres, puntos, resultado):
     '''
     Imprime el resumen mostrando como ganador
-    al jugado que haya tenido el último turno
+    al jugador que haya tenido el último turno
     '''
 
     # Obtiene los datos resultantes de la partida
@@ -280,6 +280,40 @@ def pintar_arriesgo(palabra, arriesgo):
     "indices_con_coincidencias": indices_con_coincidencias, \
     }
 
+def revelar_progreso(palabra_a_adivinar, palabra_revelada):
+    # Construye el string de la palabra a adivinar
+    # dependiendo de las coincidencias que haya en los
+    # listados
+    progreso_palabra = ""
+    for indice, letra in enumerate(palabra_a_adivinar):
+        if palabra_revelada[indice] == True:
+            progreso_palabra += letra
+        else:
+            progreso_palabra += "?"
+
+    print("\n\nPalabra a adivinar: " + progreso_palabra)
+
+def imprimir_todo_intento(palabra_a_adivinar, palabras_intentadas):
+    # Imprime todas las palabras intentadas por el jugador
+    for indice_intento in range(5):
+        if (indice_intento < len(palabras_intentadas)):
+            print(palabras_intentadas[indice_intento])
+        else:
+            print("?" * len(palabra_a_adivinar))
+
+def imprimir_salida_analisis(analisis, palabra_analizada, palabra_revelada):
+    # Si la palabra ingresada por el jugador no da ningún
+    # problema, imprime con colores la palabra que arriesgó,
+    # y actualiza los índices de las coincidencias encontradas
+    if analisis["mensaje"] == "":
+        print("Palabra arriesgada: " + palabra_analizada["texto_con_colores"])
+        for indice_coincidencia in palabra_analizada["indices_con_coincidencias"]:
+            palabra_revelada[indice_coincidencia] = True
+
+    # Caso contrario, imprime el problema que tiene esa palabra
+    else:
+        print(analisis["mensaje"])
+
 #-----------------control del juego------------------------#
 
 def partida(jugadores,turno_actual):
@@ -303,51 +337,26 @@ def partida(jugadores,turno_actual):
 
     while (intentos < INTENTOS_MAXIMOS and gano == False):
 
-        # Construye el string de la palabra a adivinar
-        # dependiendo de las coincidencias que haya en los
-        # listados
-        progreso_palabra = ""
-        for indice, letra in enumerate(palabra_a_adivinar):
-            if palabra_revelada[indice] == True:
-                progreso_palabra += letra
-            else:
-                progreso_palabra += "?"
+        revelar_progreso(palabra_a_adivinar, palabra_revelada)  
 
-        print("\n\nPalabra a adivinar: " + progreso_palabra)
-
-        # Imprime todas las palabras intentadas por el jugador
-        for indice_intento in range(5):
-            if (indice_intento < len(palabras_intentadas)):
-                print(palabras_intentadas[indice_intento])
-            else:
-                print("?" * len(palabra_a_adivinar))
+        imprimir_todo_intento(palabra_a_adivinar, palabras_intentadas)
 
         #Imprime un mensaje que indica de quien es el turno
         print(f"Es el turno del jugador {jugadores[turno_actual]}")
         
         # Solicita una entrada de una palabra y la analiza
-        arriesgo = input("Arriesgo: ")
+        arriesgo = formatear_palabra(input("Arriesgo: "))
         palabra_analizada = pintar_arriesgo(palabra_a_adivinar, arriesgo)
         analisis = analizar_input(palabra_a_adivinar, arriesgo)
 
         # La añade al listado de palabras arriesgadas
         palabras_intentadas.append(palabra_analizada["texto_con_colores"])
 
-        # Si la palabra ingresada por el jugador no da ningún
-        # problema, imprime con colores la palabra que arriesgó,
-        # y actualiza los índices de las coincidencias encontradas
-        if analisis["mensaje"] == "":
-            print("Palabra arriesgada: " + palabra_analizada["texto_con_colores"])
-            for indice_coincidencia in palabra_analizada["indices_con_coincidencias"]:
-                palabra_revelada[indice_coincidencia] = True
-
-        # Caso contrario, imprime el problema que tiene esa palabra
-        else:
-            print(analisis["mensaje"])
+        imprimir_salida_analisis(analisis, palabra_analizada, palabra_revelada)
 
         # Si la palabra coincide perfectamente con la palabra a
         # adivinar, se gana el juego
-        if (analisis["es_igual"] == True):
+        if (analisis["es_igual"]):
             gano = True
 
         # Caso contrario, simplemente se cambia de turno
@@ -395,7 +404,7 @@ def juego():
 
     # Solicita los nombres de ambos jugadores y los guarda
     # en una tupla
-    nombres_jugadores = solicitar_nombres_jugadores()
+    jugadores = solicitar_nombres_jugadores()
 
     # Establece el turno de uno de los jugadores de manera
     # aleatoria
@@ -406,7 +415,7 @@ def juego():
     while juego_activo:
 
         # Obtiene los resultados de la partida
-        resultado = partida(nombres_jugadores, turno) 
+        resultado = partida(jugadores, turno) 
 
         # Genera los puntajes correspondientes para cada
         # jugador en formato de tupla
@@ -417,7 +426,7 @@ def juego():
         puntos[JUGADOR_2] += puntajes_finales[JUGADOR_2]
 
         # Muestra los resultados de la partida
-        imprimir_resultados(nombres_jugadores, puntos, resultado, turno)
+        imprimir_resultados(jugadores, puntos, resultado, turno)
 
         # Pregunta si se quiere jugar de nuevo
         juego_activo = preguntar_jugar_de_nuevo()
