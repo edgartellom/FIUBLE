@@ -17,11 +17,11 @@ def ventana():
     frm1.config(width="300", height="150")
     
     
-    textoEntrada = Label(frm1, text="Usuario:")
-    textoEntrada.place(x=25, y=15)
+    textoEntradaUsuario = Label(frm1, text="Usuario:")
+    textoEntradaUsuario.place(x=25, y=15)
 
-    entrada = Entry(frm1)
-    entrada.place(x=150, y=15)
+    entradaUsuario = Entry(frm1)
+    entradaUsuario.place(x=150, y=15)
 
     textoEntradaClave = Label(frm1, text="Clave:")
     textoEntradaClave.place(x=25, y=55)
@@ -30,7 +30,7 @@ def ventana():
     entradaClave.config(show="*")
     entradaClave.place(x=150, y=55)
 
-    botonIngresar = Button(frm1, text="Ingresar", command=lambda: iniciar_sesion(entrada.get(), entradaClave.get()))
+    botonIngresar = Button(frm1, text="Ingresar", command=lambda: iniciar_sesion(entradaUsuario.get(), entradaClave.get()))
     botonIngresar.place(x=187, y=90)
     
     botonRegistro = Button(frm1, text="Registrar", command=lambda: nuevo_frame()) 
@@ -53,11 +53,11 @@ def nuevo_frame():
     frm2.config(width="300", height="150")
     
     
-    textoEntrada = Label(frm2, text="Usuario:")
-    textoEntrada.place(x=25, y=15)
+    textoEntradaUsuario = Label(frm2, text="Usuario:")
+    textoEntradaUsuario.place(x=25, y=15)
 
-    entrada = Entry(frm2)
-    entrada.place(x=150, y=15)
+    entradaUsuario = Entry(frm2)
+    entradaUsuario.place(x=150, y=15)
 
     textoEntradaClave = Label(frm2, text="Clave:")
     textoEntradaClave.place(x=25, y=55)
@@ -65,5 +65,11 @@ def nuevo_frame():
     entradaClave = Entry(frm2)
     entradaClave.config(show="*")
     entradaClave.place(x=150, y=55)
+
+    botonRegistro = Button(frm1, text="Registrar", command=lambda: guardar_registro(entradaUsuario.get(), entradaClave.get())) 
+    botonRegistro.place(x=187, y=90)
+
+
+    
 
 ventana()
