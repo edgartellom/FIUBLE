@@ -1,4 +1,3 @@
-from utiles import *
 import random
 import time
 import math
@@ -14,6 +13,17 @@ JUGADOR_2 = 1
 
 
 #------------control de dos jugadores-------------------------#
+
+def iniciar_sesion(usuario, clave):
+    registro = procesar_archivo()
+    if usuario == "" or clave == "": 
+        messagebox.showerror("Login", "Ingrese un Usuario y Clave!")
+    else:
+        if usuario in registro and clave == registro[usuario]:
+            messagebox.showinfo("Login", "Usuario y Clave Correctos!")
+            return usuario
+        else:
+            messagebox.showerror("Login", "Alguno de los datos ingresados es incorrecto!")
 
 def solicitar_nombres_jugadores():
     '''
@@ -434,4 +444,4 @@ def juego():
         # Cambia de turno
         turno = cambio_de_turno(turno)
 
-juego()
+# juego()
