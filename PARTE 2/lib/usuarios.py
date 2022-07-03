@@ -1,9 +1,10 @@
-from manejo_archivo_usuarios import *
+from . import archivos
 from tkinter import messagebox
+import sys
 
 
 def nombre_valido(nombre):
-    registro = procesar_archivo()
+    registro = archivos.procesar_archivo(sys.path[0] + "/db/usuarios.csv")
     valido = True
 
     if nombre not in registro.keys():
@@ -38,7 +39,7 @@ def clave_valida(clave):
                 mayusculas += 1
             elif caracter.islower():
                 minusculas += 1
-            elif caracter.isdigit():
+            elif caracter.isnumeric():
                 numeros += 1
             elif caracter == "_" or caracter == "-":
                 guiones += 1
@@ -63,23 +64,13 @@ def claves_iguales(clave_1, clave_2):
 		
 	return {"es_valido":valido, "clave":clave}
 
-def guardar_registro(nombre, clave_1, clave_2):
-    registro = procesar_archivo()
-    
-    if nombre_valido(nombre):
-        
-        if clave_valida(clave_1) and clave_valida(clave_2):
-            claves_coinciden = claves_iguales(clave_1, clave_2)
-            if claves_coinciden["es_valido"]:
-                clave = claves_coinciden["clave"]
-                guardar_nuevos_datos(nombre, clave)
-                messagebox.showinfo("Registro", "Usuario y Clave registrados con éxito!")
+def registrar_usuario(nombre, clave):
+    archivos.escribir_archivo(sys.path[0] + "/db/usuarios.csv", ",".join([nombre, clave]))
 
-            else:
-                messagebox.showerror("Registro", "Claves ingresadas no coinciden!")
+def iniciar_sesion(usuario, clave):
+    sesion_iniciada = False
+    registro = archivos.procesar_archivo(sys.path[0] + "/db/usuarios.csv")
+    if usuario in registro and clave == registro[usuario]:
+        sesion_iniciada = True
 
-        else:
-            messagebox.showerror("Registro", "Clave ingresada inválida! Debe ser entre 8 y 12 caracteres y contener al menos una minúscula, una mayúscula, un número y un guión ('-' o '_')")
-    
-    else:
-        messagebox.showerror("Registro", "Nombre ingresado inválido! Debe ser entre 4 y 15 caracteres entre letras, números y '_'")
+    return sesion_iniciada
