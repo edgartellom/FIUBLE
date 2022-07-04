@@ -292,6 +292,7 @@ def partida(jugadores, turno_actual, palabras_para_adivinar):
     palabra_revelada = [False for x in range(len(palabra_a_adivinar))]
 
     intentos = 0
+    intentos_por_jug = [0,0]
     gano = False
 
     # Inicia el conteo de tiempo desde el segundo acutal en
@@ -324,6 +325,10 @@ def partida(jugadores, turno_actual, palabras_para_adivinar):
 
         # Caso contrario, simplemente se cambia de turno
         else:
+            if turno_actual == JUGADOR_1:
+                intentos_por_jug[0] += 1
+            else:
+                intentos_por_jug[1] += 1
             turno_actual = cambio_de_turno(turno_actual)
 
         # Asigna el puntaje correspondiente dependiendo
@@ -352,18 +357,34 @@ def partida(jugadores, turno_actual, palabras_para_adivinar):
     "palabra_a_adivinar": palabra_a_adivinar, \
     "puntaje_jugador": puntaje_jugador, \
     "ultimo_turno": turno_actual, \
-    "jugador": jugadores[turno_actual]
+    "jugador": jugadores[turno_actual], \
+    "intentos por jug" : intentos_por_jug
     }
 
-def registrar_partida(resultado, jugadores):
+def registrar_partida(resultado, jugadores,aciertos):
     ahora = datetime.now()
     dia = ahora.strftime("%d/%m/%Y")
     hora = ahora.strftime("%H:%M:%S")
-    jugador = jugadores[resultado["ultimo_turno"]]
-    aciertos = 1 if resultado["gano"] else 0
-    intentos = resultado["intentos"]
-    registro_partida = f'{dia},{hora},{jugador},{aciertos},{intentos}\n'
-    archivos.escribir_archivo(RUTA_ARCHIVO_PARTIDAS, registro_partida)
+   # jugador = jugadores[resultado["ultimo_turno"]]
+
+    jug1 = jugadores[JUGADOR_1]
+    jug2 = jugadores[JUGADOR_2]
+
+    #aciertos = 1 if resultado["gano"] else 0
+    
+    intentos = resultado["intentos por jug"]
+
+    intentos_jug1 = intentos[JUGADOR_1] if jugadores[JUGADOR_1] == jug1 else intentos[JUGADOR_2]
+    intentos_jug2 = intentos[JUGADOR_1] if jugadores[JUGADOR_1] != jug1 else intentos[JUGADOR_2]
+
+   # registro_partida = f'{dia},{hora},{jug1},{str(aciertos[0])},{intentos_jug1}\n{dia},{hora},{jug2},{str(aciertos[1])},{intentos_jug2}\n'
+    registro_jug1 = (dia,hora,jug1,aciertos[JUGADOR_1],intentos_jug1)
+    registro_jug2 = (dia,hora,jug2,aciertos[JUGADOR_2],intentos_jug2)
+    registro_partida = [registro_jug1,registro_jug2]
+    registro_partida = sorted(registro_partida,key = lambda x:x[0][3],reverse = True)
+
+    archivos.guardar_partidas(RUTA_ARCHIVO_PARTIDAS,registro_partida)
+    #archivos.escribir_archivo(RUTA_ARCHIVO_PARTIDAS, registro_partida)
 
 def imprimir_resumen(partidas):
 
@@ -399,17 +420,22 @@ def juego(jugadores, palabras, config):
     # Ciclo del juego
     juego_activo = True
     partidas_jugadas = 0
+    acierto = [0,0]
     while juego_activo:
 
         # Obtiene los resultados de la partida
         resultado = partida(jugadores, turno, palabras)
 
+        if resultado["gano"]:
+            if resultado["ultimo_turno"] == JUGADOR_1:
+                acierto[0] += 1
+            else:
+                acierto[1] += 1
+
         # Registra el resultado de la partida en el listado
         partidas.append(resultado)
 
-        # Guarda el resultado de la partida en el archivo correspondiente
-        registrar_partida(resultado, jugadores)
-
+       
         # Genera los puntajes correspondientes para cada
         # jugador en formato de tupla
         puntajes_finales = guardar_puntaje(resultado["puntaje_jugador"],resultado["ultimo_turno"],turno) 
@@ -431,6 +457,8 @@ def juego(jugadores, palabras, config):
             juego_activo = preguntar_jugar_de_nuevo()
         else:
             juego_activo = False
+    # Guarda el resultado de la partida en el archivo correspondiente
+    registrar_partida(resultado, jugadores,acierto)
 
     imprimir_resumen(partidas)
 # juego()

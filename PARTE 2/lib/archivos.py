@@ -51,3 +51,11 @@ def vaciar_archivo(ruta_archivo):
   archivo = open(ruta_archivo, "w")
   archivo.write("")
   archivo.close()
+
+def guardar_partidas(ruta_archivo,registro):
+    archivo = open(ruta_archivo,"a")
+    for datos in registro:
+        archivo.write(f"{datos[0]},{datos[1]},{datos[2]},{datos[3]},{datos[4]}\n")
+        if registro[-1] == datos:
+            archivo.write("\n")
+    archivo.close()

@@ -63,12 +63,12 @@ def imprimir_configuracion(configuracion, valores_omision):
 # Runtime
 config_archivo = archivos.procesar_archivo("./configuracion.csv")
 config, omision = actualizar_diccionario(config_archivo, CFG_DEFECTO)
-jugadores = obtener_jugadores()
+#jugadores = obtener_jugadores()
 
 imprimir_configuracion(config, omision)
 palabras = generar_palabras_secretas(config)
 if (config["REINICIAR_ARCHIV0_PARTIDAS"] == "True"):
   archivos.vaciar_archivo("./db/partidas.csv")
 
-
-juego.juego(jugadores, palabras, config)
+jugadores = ("bruno","tomas")
+juego.juego(jugadores, palabras, config)  
