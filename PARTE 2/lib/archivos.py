@@ -1,89 +1,53 @@
 import string
 from . import cadenas
-import sys
 
-def leer_linea(archivo, separador, default):
+SEPARADOR_CSV = ","
+SEPARADOR_TXT = " "
+
+def leer_linea(archivo, separador, default = ["", ""]):
   linea = archivo.readline()
   return linea.rstrip("\n").split(separador) if linea else default
 
+def combinar_cuentos(cuentos, longitud_palabras):
+    palabras = {}
+    for indice, cuento in enumerate(cuentos):
+        archivo = open(cuento)
 
+        linea = leer_linea(archivo, SEPARADOR_TXT, "")
 
-def procesar_config(config):
-    linea_config = leer_linea(config, ",", ",")
-    configuracion = {}
-    while linea_config != ",":
-        linea_temp = linea_config
-        while linea_config != "," and linea_temp == linea_config:
-            configuracion[linea_temp[0]] = linea_temp[1]
-            linea_config = leer_linea(config, ",", ",")
-    return configuracion
-
-# def procesar_archivo(archivo, configuracion, palabras_secretas):
-#     repeticiones = {}
-#     linea = leer_linea(archivo, " ", "")
-#     while linea:
-#         linea_temp = linea
-        
-#         while linea and linea_temp == linea:
-#             i = 0
-#             cont_cadena = 1
-#             while linea and linea_temp == linea and i < len(linea_temp):
-#                 cadena_ = linea_temp[i].strip(string.punctuation)
-#                 cadena = cadenas.formatear_palabra(cadena_)
-                
-#                 if cadena in palabras_secretas:
-#                     cont_cadena += 1
-#                     repeticiones[cadena] = cont_cadena
-#                 else: 
-#                     if cadena.isalpha() and len(cadena) == int(configuracion["LONGITUD_PALABRA_SECRETA"]):
-#                         palabras_secretas.append(cadena)
-#                 i+=1
-#             linea = leer_linea(archivo, " ", "")
-#     repeticiones_ord = sorted(repeticiones.items())
-#     return repeticiones_ord
-
-# def merge(archivo_1, archivo_2, archivo_3, palabras):
-#     linea_1 = leer_linea(archivo_1, " ", "")
-#     linea_2 = leer_linea(archivo_2, " ", "")
-#     linea_3 = leer_linea(archivo_3, " ", "")
-#     configuracion = procesar_config(config)
-#     lista = []
-#     repeticiones_1 = procesar_archivo(archivo_1, configuracion, lista)
-#     repeticiones_2 = procesar_archivo(archivo_2, configuracion, lista)
-#     repeticiones_3 = procesar_archivo(archivo_3, configuracion, lista)
+        while linea:
+            for palabra in linea:
+                palabra_limpia = palabra.strip(string.punctuation)
+                if palabra_limpia.isalpha() and len(palabra_limpia) == int(longitud_palabras):
+                    palabra_formateada = cadenas.formatear_palabra(palabra_limpia)
+                    if not palabra_formateada in palabras:
+                        palabras[palabra_formateada] = [0 for x in range(len(cuentos))]
+                    palabras[palabra_formateada][indice] += 1
+            linea = leer_linea(archivo, SEPARADOR_TXT, "")
+        archivo.close()
     
-    
-#     lista_ord = sorted(lista)
-#     dicc_ord = {"palabras_secretas":lista_ord}
-#     return dicc_ord
-
-def leer_archivo(archivo):
-    linea = archivo.readline()
-    if linea:
-        linea = linea.rstrip("\n")
-    else:
-        linea = ","
-
-    return linea.split(",")
-
+    return palabras
 
 def procesar_archivo(ruta_archivo):
-    with open(ruta_archivo, "r") as archivo:
-        clave, valor = leer_archivo(archivo)
-        registro = { clave: valor }
-        while clave:
-            registro[clave] = valor
-            clave, valor = leer_archivo(archivo)
+    archivo = open(ruta_archivo, "r")
+    extension = archivo.name.split(".")[-1]
+    separador = SEPARADOR_CSV if extension == "csv" else SEPARADOR_TXT
+
+    registro = {}
+    linea = leer_linea(archivo, separador)
+    while linea[0]:
+        valor = linea[1:len(linea)]
+        registro[linea[0]] = valor[0] if valor else ""
+        linea = leer_linea(archivo, separador)
 
     return registro
 
 def escribir_archivo(ruta_archivo, cadena):
   archivo = open(ruta_archivo, "a")
   archivo.write(cadena)
+  archivo.close()
 
-def guardar_nuevos_datos(nuevo_usuario, nueva_clave):
-    with open (sys.path[0] + "/db/usuarios.csv", "a") as archivo:
-        linea = f"{nuevo_usuario},{nueva_clave}\n"
-        archivo.write(linea)
-    
-    return
+def vaciar_archivo(ruta_archivo):
+  archivo = open(ruta_archivo, "w")
+  archivo.write("")
+  archivo.close()

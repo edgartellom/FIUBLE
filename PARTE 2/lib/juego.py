@@ -1,13 +1,14 @@
 import random
 import time
 import math
-from utiles import *
-from cadenas import *
+import sys
+from datetime import datetime
+from . import utiles, cadenas, archivos
 
 # Constantes
 INTENTOS_MAXIMOS = 5
-REEMPLAZOS_TILDES = { "Á": "A", "É": "E", "Í": "I", "Ó": "O", "Ú": "U" }
 PUNTAJE_POR_INTENTOS = {0: 50, 1: 40, 2: 30, 3: 20, 4: 10, 5: -100}
+RUTA_ARCHIVO_PARTIDAS = sys.path[0] + "/db/partidas.csv"
 
 #Indices de jugador
 JUGADOR_1 = 0
@@ -212,23 +213,23 @@ def pintar_arriesgo(palabra, arriesgo):
     while(indice < len(arriesgo) and es_palabra_valida):
 
         # Normaliza la letra
-        letra_arriesgo_normalizada = formatear_letra(arriesgo[indice])
+        letra_arriesgo_normalizada = cadenas.formatear_letra(arriesgo[indice])
 
         # Si la letra es la misma en la misma posición para
         # las dos palabras, añade el color verde
         if letra_arriesgo_normalizada == palabra[indice]:
-            texto_con_colores += obtener_color("Verde")
+            texto_con_colores += utiles.obtener_color("Verde")
             indices_con_coincidencias.append(indice)
 
         # De otro modo, si la letra simplemente está en la palabra
         # (aunque no en la misma posición), asigna el color amarillo
         elif letra_arriesgo_normalizada in palabra:
-            texto_con_colores += obtener_color("Amarillo")
+            texto_con_colores += utiles.obtener_color("Amarillo")
 
         # Caso contrario, la letra no se encuentra en la palabra
         # así que se asigna color gris oscuro
         else:
-            texto_con_colores += obtener_color("GrisOscuro")
+            texto_con_colores += utiles.obtener_color("GrisOscuro")
 
         # Teniendo el color asignado, colocamos la letra
         texto_con_colores += letra_arriesgo_normalizada
@@ -238,7 +239,7 @@ def pintar_arriesgo(palabra, arriesgo):
 
     # Volvemos a poner el color por defecto para que las
     # siguientes líneas no queden mal
-    texto_con_colores += obtener_color("Defecto")
+    texto_con_colores += utiles.obtener_color("Defecto")
 
     return { \
     "texto_con_colores": texto_con_colores, \
@@ -281,17 +282,14 @@ def imprimir_salida_analisis(analisis, palabra_analizada, palabra_revelada):
 
 #-----------------control del juego------------------------#
 
-def partida(jugadores,turno_actual):
+def partida(jugadores, turno_actual, palabras_para_adivinar):
     
-    # Obtiene una palabra aleatoria de la lista y la normaliza
-    palabras_para_adivinar = obtener_palabras_validas()
-    palabra_random = random.choice(palabras_para_adivinar)
-    palabra_a_adivinar = formatear_palabra(palabra_random)
+    palabra_a_adivinar = random.choice(palabras_para_adivinar)
     # Listado de palabras introducidas por el jugador
     palabras_intentadas = []
 
     # Listado de índices de la palabra descubiertos
-    palabra_revelada = [False for x in range(5)]
+    palabra_revelada = [False for x in range(len(palabra_a_adivinar))]
 
     intentos = 0
     gano = False
@@ -310,7 +308,7 @@ def partida(jugadores,turno_actual):
         print(f"Es el turno del jugador {jugadores[turno_actual]}")
         
         # Solicita una entrada de una palabra y la analiza
-        arriesgo = formatear_palabra(input("Arriesgo: "))
+        arriesgo = cadenas.formatear_palabra(input("Arriesgo: "))
         palabra_analizada = pintar_arriesgo(palabra_a_adivinar, arriesgo)
         analisis = analizar_input(palabra_a_adivinar, arriesgo)
 
@@ -353,11 +351,36 @@ def partida(jugadores,turno_actual):
     "intentos": intentos, \
     "palabra_a_adivinar": palabra_a_adivinar, \
     "puntaje_jugador": puntaje_jugador, \
-    "ultimo_turno": turno_actual \
+    "ultimo_turno": turno_actual, \
+    "jugador": jugadores[turno_actual]
     }
 
+def registrar_partida(resultado, jugadores):
+    ahora = datetime.now()
+    dia = ahora.strftime("%d/%m/%Y")
+    hora = ahora.strftime("%H:%M:%S")
+    jugador = jugadores[resultado["ultimo_turno"]]
+    aciertos = 1 if resultado["gano"] else 0
+    intentos = resultado["intentos"]
+    registro_partida = f'{dia},{hora},{jugador},{aciertos},{intentos}\n'
+    archivos.escribir_archivo(RUTA_ARCHIVO_PARTIDAS, registro_partida)
 
-def juego():
+def imprimir_resumen(partidas):
+
+    def alinear_item(string):
+        return string + "".join([" " for x in range(18 - len(string))])
+
+    print("===================== RESUMEN DE PARTIDA =====================")
+    print("Partida           Palabra           Ganador           Intentos          ")
+    for indice, partida in enumerate(partidas):
+        nro_partida = alinear_item(str(indice + 1))
+        palabra = alinear_item(partida["palabra_a_adivinar"])
+        ganador = alinear_item(partida["jugador"] if partida["gano"] else "-")
+        intentos = alinear_item(str(partida["intentos"]))
+        print(f'{nro_partida}{palabra}{ganador}{intentos}')
+    print("\n\n\n")
+
+def juego(jugadores, palabras, config):
     '''
     Instancia el juego
     '''
@@ -367,20 +390,25 @@ def juego():
     # puntos[JUGADOR_2] = 0
     puntos = [0, 0]
 
-    # Solicita los nombres de ambos jugadores y los guarda
-    # en una tupla
-    jugadores = solicitar_nombres_jugadores()
-
     # Establece el turno de uno de los jugadores de manera
     # aleatoria
     turno = random.randint(0,1)
+
+    partidas = []
                             
     # Ciclo del juego
     juego_activo = True
+    partidas_jugadas = 0
     while juego_activo:
 
         # Obtiene los resultados de la partida
-        resultado = partida(jugadores, turno) 
+        resultado = partida(jugadores, turno, palabras)
+
+        # Registra el resultado de la partida en el listado
+        partidas.append(resultado)
+
+        # Guarda el resultado de la partida en el archivo correspondiente
+        registrar_partida(resultado, jugadores)
 
         # Genera los puntajes correspondientes para cada
         # jugador en formato de tupla
@@ -393,10 +421,16 @@ def juego():
         # Muestra los resultados de la partida
         imprimir_resultados(jugadores, puntos, resultado, turno)
 
-        # Pregunta si se quiere jugar de nuevo
-        juego_activo = preguntar_jugar_de_nuevo()
-
         # Cambia de turno
         turno = cambio_de_turno(turno)
 
+        partidas_jugadas += 1
+
+        # Pregunta si se quiere jugar de nuevo
+        if partidas_jugadas < int(config["MAXIMO_PARTIDAS"]):
+            juego_activo = preguntar_jugar_de_nuevo()
+        else:
+            juego_activo = False
+
+    imprimir_resumen(partidas)
 # juego()
