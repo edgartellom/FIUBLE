@@ -342,7 +342,8 @@ def partida(jugadores, turno_actual, palabras_para_adivinar):
         # Caso contrario, simplemente se cambia de turno
         else:
             intentos_jugador[turno_actual] += 1
-
+            turno_actual = cambio_de_turno(turno_actual)
+            
         # Asigna el puntaje correspondiente dependiendo
         # de los intentos
         puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos_totales]
