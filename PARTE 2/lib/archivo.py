@@ -28,7 +28,7 @@ def combinar_cuentos(cuentos, longitud_palabras):
     
     return palabras
 
-def procesar_archivo(ruta_archivo):
+def procesar(ruta_archivo):
     archivo = open(ruta_archivo, "r")
     extension = archivo.name.split(".")[-1]
     separador = SEPARADOR_CSV if extension == "csv" else SEPARADOR_TXT
@@ -42,12 +42,27 @@ def procesar_archivo(ruta_archivo):
 
     return registro
 
-def escribir_archivo(ruta_archivo, cadena):
+def obtener_lineas(ruta_archivo):
+    archivo = open(ruta_archivo)
+    lineas = archivo.readlines()
+    archivo.close()
+    return lineas
+
+def escribir(ruta_archivo, cadena):
   archivo = open(ruta_archivo, "a")
   archivo.write(cadena)
   archivo.close()
 
-def vaciar_archivo(ruta_archivo):
+def sobreescribir(ruta_archivo, contenido):
+    archivo = open(ruta_archivo, "w")
+    if isinstance(contenido, list):
+        for linea in contenido:
+            archivo.write(linea)
+    else:
+        archivo.write(contenido)
+    archivo.close()
+
+def vaciar(ruta_archivo):
   archivo = open(ruta_archivo, "w")
   archivo.write("")
   archivo.close()

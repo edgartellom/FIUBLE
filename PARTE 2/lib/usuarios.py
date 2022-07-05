@@ -1,10 +1,10 @@
-from . import archivos
+from . import archivo
 from tkinter import messagebox
 import sys
 
 
 def nombre_valido(nombre):
-    registro = archivos.procesar_archivo(sys.path[0] + "/db/usuarios.csv")
+    registro = archivo.procesar(sys.path[0] + "/db/usuarios.csv")
     valido = True
 
     if nombre not in registro.keys():
@@ -65,11 +65,11 @@ def claves_iguales(clave_1, clave_2):
 	return {"es_valido":valido, "clave":clave}
 
 def registrar_usuario(nombre, clave):
-    archivos.escribir_archivo(sys.path[0] + "/db/usuarios.csv", ",".join([nombre, clave]))
+    archivo.escribir(sys.path[0] + "/db/usuarios.csv", ",".join([nombre, clave]))
 
 def iniciar_sesion(usuario, clave):
     sesion_iniciada = False
-    registro = archivos.procesar_archivo(sys.path[0] + "/db/usuarios.csv")
+    registro = archivo.procesar(sys.path[0] + "/db/usuarios.csv")
     if usuario in registro and clave == registro[usuario]:
         sesion_iniciada = True
 

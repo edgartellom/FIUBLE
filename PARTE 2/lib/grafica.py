@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
-from . import usuarios, archivos
+from . import usuarios
 import sys
 
 ICONO = sys.path[0] + "/assets/cuantico.ico"

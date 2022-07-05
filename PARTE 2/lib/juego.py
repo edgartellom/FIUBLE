@@ -2,8 +2,9 @@ import random
 import time
 import math
 import sys
+import os
 from datetime import datetime
-from . import utiles, cadenas, archivos
+from . import utiles, cadenas, archivo
 
 # Constantes
 INTENTOS_MAXIMOS = 5
@@ -76,7 +77,9 @@ def guardar_puntaje(puntaje, ultimo_turno, turno_actual):
             jugador1punt = round(puntaje / 2)
 
     return (jugador1punt,jugador2punt)
-    
+
+def limpiar_pantalla():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 #-----------------------control del juego----------------------------#
 
@@ -111,9 +114,11 @@ def imprimir_ganador(nombres, puntos, resultado):
     ganador = JUGADOR_1 if ultimo_turno == JUGADOR_1 else JUGADOR_2
     perdedor = JUGADOR_2 if ultimo_turno == JUGADOR_1 else JUGADOR_1
 
-    print (f"\nGanaste {nombres[ganador]}! Tardaste {minutos_de_juego} minutos y {segundos} segundos en adivinar la palabra.\n")
+    print("\n-----\n")
+    print(f"Ganaste {nombres[ganador]}! Tardaste {minutos_de_juego} minutos y {segundos} segundos en adivinar la palabra.\n")
     print(f"Obtuviste un total de {puntaje_jugador} puntos, tenes acumulados {puntos[ganador]} puntos.")
-    print(f"El jugador {nombres[perdedor]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos[perdedor]}.\n")
+    print(f"El jugador {nombres[perdedor]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos[perdedor]}.")
+    print("\n-----\n")
 
 def imprimir_perdedores(nombres, puntos, resultado, primer_turno):
     '''
@@ -128,11 +133,13 @@ def imprimir_perdedores(nombres, puntos, resultado, primer_turno):
     segundo = JUGADOR_1 if primer_turno == JUGADOR_2 else JUGADOR_2
     
     # Extrae la palabra a adivinar del resultado
-    palabra_a_adivinar = resultado["palabra_a_adivinar"]
+    palabra_secreta = resultado["palabra_secreta"]
 
-    print(f"\nPerdieron! La palabra era {palabra_a_adivinar}.\n")
+    print("\n-----\n")
+    print(f"Perdieron! La palabra era {palabra_secreta}.\n")
     print(f"El jugador {nombres[primero]} perdió un total de 100 y tiene acumulado {puntos[primero]}")
-    print(f"Y el jugador {nombres[segundo]} perdió un total de 50 y tiene un total de {puntos[segundo]}\n")
+    print(f"Y el jugador {nombres[segundo]} perdió un total de 50 y tiene un total de {puntos[segundo]}")
+    print("\n-----\n")
 
 def imprimir_resultados(nombres, puntos, resultado, primer_turno):
     '''
@@ -246,26 +253,26 @@ def pintar_arriesgo(palabra, arriesgo):
     "indices_con_coincidencias": indices_con_coincidencias, \
     }
 
-def revelar_progreso(palabra_a_adivinar, palabra_revelada):
+def imprimir_progreso(palabra_secreta, palabra_revelada):
     # Construye el string de la palabra a adivinar
     # dependiendo de las coincidencias que haya en los
     # listados
     progreso_palabra = ""
-    for indice, letra in enumerate(palabra_a_adivinar):
+    for indice, letra in enumerate(palabra_secreta):
         if palabra_revelada[indice] == True:
             progreso_palabra += letra
         else:
             progreso_palabra += "?"
 
-    print("\n\nPalabra a adivinar: " + progreso_palabra)
+    print("Palabra a adivinar: " + progreso_palabra)
 
-def imprimir_todo_intento(palabra_a_adivinar, palabras_intentadas):
+def imprimir_intentos(palabra_secreta, palabras_intentadas):
     # Imprime todas las palabras intentadas por el jugador
     for indice_intento in range(5):
         if (indice_intento < len(palabras_intentadas)):
             print(palabras_intentadas[indice_intento])
         else:
-            print("?" * len(palabra_a_adivinar))
+            print("?" * len(palabra_secreta))
 
 def imprimir_salida_analisis(analisis, palabra_analizada, palabra_revelada):
     # Si la palabra ingresada por el jugador no da ningún
@@ -284,34 +291,43 @@ def imprimir_salida_analisis(analisis, palabra_analizada, palabra_revelada):
 
 def partida(jugadores, turno_actual, palabras_para_adivinar):
     
-    palabra_a_adivinar = random.choice(palabras_para_adivinar)
+    # Obtiene la palabra para adivinar
+    palabra_secreta = random.choice(palabras_para_adivinar)
+
     # Listado de palabras introducidas por el jugador
     palabras_intentadas = []
 
     # Listado de índices de la palabra descubiertos
-    palabra_revelada = [False for x in range(len(palabra_a_adivinar))]
+    palabra_revelada = [False for x in range(len(palabra_secreta))]
 
-    intentos = 0
-    intentos_por_jug = [0,0]
+    intentos_totales = 0
+    intentos_jugador = [0, 0]
+    aciertos_jugador = [0, 0]
     gano = False
 
     # Inicia el conteo de tiempo desde el segundo acutal en
     # el sistema epoch (UNIX)
     tiempo_inicial = time.time()
 
-    while (intentos < INTENTOS_MAXIMOS and gano == False):
+    while (intentos_totales < INTENTOS_MAXIMOS and gano == False):
 
-        revelar_progreso(palabra_a_adivinar, palabra_revelada)  
+        limpiar_pantalla()
 
-        imprimir_todo_intento(palabra_a_adivinar, palabras_intentadas)
+        # Imprime el progreso de la palabra y todos los intentos
+        imprimir_progreso(palabra_secreta, palabra_revelada)
+        imprimir_intentos(palabra_secreta, palabras_intentadas)
 
-        #Imprime un mensaje que indica de quien es el turno
+        # Imprime un mensaje que indica de quien es el turno
         print(f"Es el turno del jugador {jugadores[turno_actual]}")
         
         # Solicita una entrada de una palabra y la analiza
         arriesgo = cadenas.formatear_palabra(input("Arriesgo: "))
-        palabra_analizada = pintar_arriesgo(palabra_a_adivinar, arriesgo)
-        analisis = analizar_input(palabra_a_adivinar, arriesgo)
+        palabra_analizada = pintar_arriesgo(palabra_secreta, arriesgo)
+        analisis = analizar_input(palabra_secreta, arriesgo)
+
+        aciertos = len(palabra_analizada["indices_con_coincidencias"])
+        if (aciertos > aciertos_jugador[turno_actual]):
+            aciertos_jugador[turno_actual] = aciertos
 
         # La añade al listado de palabras arriesgadas
         palabras_intentadas.append(palabra_analizada["texto_con_colores"])
@@ -325,22 +341,18 @@ def partida(jugadores, turno_actual, palabras_para_adivinar):
 
         # Caso contrario, simplemente se cambia de turno
         else:
-            if turno_actual == JUGADOR_1:
-                intentos_por_jug[0] += 1
-            else:
-                intentos_por_jug[1] += 1
-            turno_actual = cambio_de_turno(turno_actual)
+            intentos_jugador[turno_actual] += 1
 
         # Asigna el puntaje correspondiente dependiendo
         # de los intentos
-        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos]
+        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos_totales]
 
-        intentos += 1
+        intentos_totales += 1
         
     # En caso de que ambos hayan perdido asigna los puntos
     # negativos correspondientes
     if gano == False:    
-        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos]
+        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos_totales]
 
     # Obtiene el tiempo final siguiendo la misma metodología
     # de antes (ms UNIX)
@@ -353,53 +365,50 @@ def partida(jugadores, turno_actual, palabras_para_adivinar):
     "gano": gano, \
     "minutos_de_juego": minutos_de_juego, \
     "segundos_de_juego": segundos_de_juego, \
-    "intentos": intentos, \
-    "palabra_a_adivinar": palabra_a_adivinar, \
+    "intentos_totales": intentos_totales, \
+    "palabra_secreta": palabra_secreta, \
     "puntaje_jugador": puntaje_jugador, \
     "ultimo_turno": turno_actual, \
     "jugador": jugadores[turno_actual], \
-    "intentos por jug" : intentos_por_jug
+    "intentos_jugador" : intentos_jugador, \
+    "aciertos_jugador": aciertos_jugador
     }
 
-def registrar_partida(resultado, jugadores,aciertos):
+def generar_registro_partida(resultado, jugadores, indice_jugador, fecha):
+    dia = fecha.strftime("%d/%m/%Y")
+    hora = fecha.strftime("%H:%M:%S")
+    jugador = jugadores[indice_jugador]
+    aciertos = str(resultado["aciertos_jugador"][indice_jugador])
+    intentos = resultado["intentos_jugador"][indice_jugador]
+    return f'{dia},{hora},{jugador},{aciertos},{intentos}\n'
+
+def registrar_partida(resultado, jugadores):
     ahora = datetime.now()
-    dia = ahora.strftime("%d/%m/%Y")
-    hora = ahora.strftime("%H:%M:%S")
-   # jugador = jugadores[resultado["ultimo_turno"]]
 
-    jug1 = jugadores[JUGADOR_1]
-    jug2 = jugadores[JUGADOR_2]
+    registro_jugador1 = generar_registro_partida(resultado, jugadores, JUGADOR_1, ahora)
+    registro_jugador2 = generar_registro_partida(resultado, jugadores, JUGADOR_2, ahora)
 
-    #aciertos = 1 if resultado["gano"] else 0
-    
-    intentos = resultado["intentos por jug"]
+    registros = archivo.obtener_lineas(RUTA_ARCHIVO_PARTIDAS)
+    registros.append(registro_jugador1)
+    registros.append(registro_jugador2)
+    registros.sort(key=lambda x: x.split(',')[3], reverse=True)
 
-    intentos_jug1 = intentos[JUGADOR_1] if jugadores[JUGADOR_1] == jug1 else intentos[JUGADOR_2]
-    intentos_jug2 = intentos[JUGADOR_1] if jugadores[JUGADOR_1] != jug1 else intentos[JUGADOR_2]
-
-   # registro_partida = f'{dia},{hora},{jug1},{str(aciertos[0])},{intentos_jug1}\n{dia},{hora},{jug2},{str(aciertos[1])},{intentos_jug2}\n'
-    registro_jug1 = (dia,hora,jug1,aciertos[JUGADOR_1],intentos_jug1)
-    registro_jug2 = (dia,hora,jug2,aciertos[JUGADOR_2],intentos_jug2)
-    registro_partida = [registro_jug1,registro_jug2]
-    registro_partida = sorted(registro_partida,key = lambda x:x[0][3],reverse = True)
-
-    archivos.guardar_partidas(RUTA_ARCHIVO_PARTIDAS,registro_partida)
-    #archivos.escribir_archivo(RUTA_ARCHIVO_PARTIDAS, registro_partida)
+    archivo.sobreescribir(RUTA_ARCHIVO_PARTIDAS, registros)
 
 def imprimir_resumen(partidas):
 
     def alinear_item(string):
         return string + "".join([" " for x in range(18 - len(string))])
 
-    print("===================== RESUMEN DE PARTIDA =====================")
-    print("Partida           Palabra           Ganador           Intentos          ")
+    print("===================== SINOPSIS DEL JUEGO =====================")
+    print("Partida           Palabra           Ganador           Intentos")
     for indice, partida in enumerate(partidas):
         nro_partida = alinear_item(str(indice + 1))
-        palabra = alinear_item(partida["palabra_a_adivinar"])
+        palabra = alinear_item(partida["palabra_secreta"])
         ganador = alinear_item(partida["jugador"] if partida["gano"] else "-")
-        intentos = alinear_item(str(partida["intentos"]))
+        intentos = alinear_item(str(partida["intentos_totales"]))
         print(f'{nro_partida}{palabra}{ganador}{intentos}')
-    print("\n\n\n")
+    print("\n")
 
 def juego(jugadores, palabras, config):
     '''
@@ -407,8 +416,6 @@ def juego(jugadores, palabras, config):
     '''
 
     # Variables que contendrán los puntajes de cada jugador
-    # puntos[JUGADOR_1] = 0
-    # puntos[JUGADOR_2] = 0
     puntos = [0, 0]
 
     # Establece el turno de uno de los jugadores de manera
@@ -420,22 +427,16 @@ def juego(jugadores, palabras, config):
     # Ciclo del juego
     juego_activo = True
     partidas_jugadas = 0
-    acierto = [0,0]
     while juego_activo:
+
+        limpiar_pantalla()
 
         # Obtiene los resultados de la partida
         resultado = partida(jugadores, turno, palabras)
 
-        if resultado["gano"]:
-            if resultado["ultimo_turno"] == JUGADOR_1:
-                acierto[0] += 1
-            else:
-                acierto[1] += 1
-
         # Registra el resultado de la partida en el listado
         partidas.append(resultado)
 
-       
         # Genera los puntajes correspondientes para cada
         # jugador en formato de tupla
         puntajes_finales = guardar_puntaje(resultado["puntaje_jugador"],resultado["ultimo_turno"],turno) 
@@ -444,8 +445,10 @@ def juego(jugadores, palabras, config):
         puntos[JUGADOR_1] += puntajes_finales[JUGADOR_1]
         puntos[JUGADOR_2] += puntajes_finales[JUGADOR_2]
 
-        # Muestra los resultados de la partida
+        # Muestra los resultados de la partida y los escribe
+        # en el archivo correspondiente
         imprimir_resultados(jugadores, puntos, resultado, turno)
+        registrar_partida(resultado, jugadores)
 
         # Cambia de turno
         turno = cambio_de_turno(turno)
@@ -457,8 +460,6 @@ def juego(jugadores, palabras, config):
             juego_activo = preguntar_jugar_de_nuevo()
         else:
             juego_activo = False
-    # Guarda el resultado de la partida en el archivo correspondiente
-    registrar_partida(resultado, jugadores,acierto)
 
+    limpiar_pantalla()
     imprimir_resumen(partidas)
-# juego()
