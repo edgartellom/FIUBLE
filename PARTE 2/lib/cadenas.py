@@ -1,8 +1,15 @@
-REEMPLAZOS_TILDES = { "Á": "A", "É": "E", "Í": "I", "Ó": "O", "Ú": "U" }
+REEMPLAZOS_TILDES = {"Á": "A", "É": "E", "Í": "I", "Ó": "O", "Ú": "U"}
+
+
+
+
+
 
 def formatear_letra(letra):
     '''
     Devuelve una letra dada en mayúscula y sin tilde
+
+    ~ Edgar Tello
     '''
 
     letra_formateada = letra
@@ -18,17 +25,19 @@ def formatear_letra(letra):
 
     return letra_formateada
 
-#-----------------control de palabras-----------------------#
+
 
 def formatear_palabra(palabra):
     '''
     Devuelve una palabra dada en mayúscula y sin tildes
+
+    ~ Edgar Tello
     '''
 
     palabra_formateada = ""
 
     # Itera letra por letra para retornar la palabra
-    # formateada 
+    # formateada
     for letra in palabra:
         palabra_formateada += formatear_letra(letra)
 
