@@ -3,9 +3,23 @@ from tkinter import messagebox
 from . import usuarios
 import sys
 
+
+
 ICONO = sys.path[0] + "/assets/cuantico.ico"
 
+
+
+
+
+
 def solicitar_credenciales(indice_jugador):
+    '''
+        Abre una ventana con tkinter que le solicita al
+        jugador un usuario y contraseña. Finalmente retorna
+        esos datos en un listado
+
+        ~ Tomas Fernández Moreno
+    '''
 
     ventana=Tk()
     ventana.title("Login usuario" + str(indice_jugador))
@@ -15,14 +29,30 @@ def solicitar_credenciales(indice_jugador):
 
     credenciales = ["", ""]
     def definir_usuario(usuario, clave):
-        credenciales[0] = usuario
-        credenciales[1] = clave
+        '''
+            Establece las credenciales introducidas por el
+            usuario en la variable correspondiente para que
+            sea accesible desde la función padre siempre y
+            cuando esos datos sean válidos
 
+            ~ Tomas Fernández Moreno
+        '''
+
+        # Evita que los datos vengan vacíos
         if usuario == "" or clave == "": 
             messagebox.showerror("Login", "Ingrese un Usuario y Clave!")
-        elif usuarios.iniciar_sesion(credenciales[0], credenciales[1]):
+
+        # En caso de que el inicio de sesión sea correcto
+        # establece la variable de credenciales con
+        # los datos y cierra la ventana
+        elif usuarios.iniciar_sesion(usuario, clave):
             messagebox.showinfo("Login", "Usuario y Clave Correctos!")
+            credenciales[0] = usuario
+            credenciales[1] = clave
             ventana.destroy()
+
+        # Si el login fue erróneo lo notifica con una
+        # ventana emergente y vacía los campos
         else:
             messagebox.showerror("Login", "Alguno de los datos ingresados es incorrecto!")
             entradaUsuario.delete(0, END)
@@ -54,7 +84,17 @@ def solicitar_credenciales(indice_jugador):
     return credenciales
     
 
+
 def solicitar_credenciales_nuevo_usuario():
+    '''
+        Abre una ventana con tkinter que le solicita al
+        jugador un nombre de usuario y una contraseña que
+        tendrá que repetir 2 veces. Una vez los datos
+        fueron validados, llama a una función que escriba
+        las credenciales en usuarios.csv
+
+        ~ Tomas Fernández Moreno
+    '''
 
     ventana=Tk()
     ventana.title("Registro")
@@ -62,15 +102,21 @@ def solicitar_credenciales_nuevo_usuario():
     ventana.resizable(0,0)
     ventana.geometry("300x200")
 
-    credenciales = ["", "", ""]
     def procesar_credenciales(usuario, clave, clave_repetida):
-        credenciales[0] = usuario
-        credenciales[1] = clave
-        credenciales[2] = clave_repetida
+        '''
+            Hace todas las validaciones de nombre y contraseña.
+            En caso de que sean correctas registra el usuario
 
+            ~ Tomas Fernández Moreno
+        '''
+        
         if usuarios.nombre_valido(usuario):
             if clave == clave_repetida:
                 if usuarios.clave_valida(clave):
+
+                    # En caso de que todas las validaciones sean
+                    # satisfactorias, registra el usuario y destruye
+                    # la ventana
                     usuarios.registrar_usuario(usuario, clave)
                     messagebox.showinfo("Registro", "Usuario y Clave registrados con éxito!")
                     ventana.destroy()
@@ -105,6 +151,3 @@ def solicitar_credenciales_nuevo_usuario():
     botonRegistro.place(x=187, y=115)
 
     botonRegresar = Button(ventana, text="Regresar", command=ventana.destroy).place(x=187, y=155)
- 
-
-# ventana()

@@ -6,46 +6,46 @@ import os
 from datetime import datetime
 from . import utiles, cadenas, archivo
 
+
+
 # Constantes
 INTENTOS_MAXIMOS = 5
 PUNTAJE_POR_INTENTOS = {0: 50, 1: 40, 2: 30, 3: 20, 4: 10, 5: -100}
 RUTA_ARCHIVO_PARTIDAS = sys.path[0] + "/db/partidas.csv"
+
+
 
 #Indices de jugador
 JUGADOR_1 = 0
 JUGADOR_2 = 1
 
 
-#------------control de dos jugadores-------------------------#
 
-def solicitar_nombres_jugadores():
-    '''
-    Solicita los nombres de los jugadores y los
-    retorna empaquetados
-    '''
 
-    jug_1 = input("Ingrese el nombre del jugador 1: ")
-    jug_2 = input("Ingrese el nombre del jugador 2: ")
-    return jug_1, jug_2
+
 
 def cambio_de_turno(turno_actual):
     ''' 
-    Al finalizar la partida se llama a esta funcion
-    para cambiar el turno 
+        Al finalizar la partida se llama a esta funcion
+        para cambiar el turno 
+
+        ~ María Rosa Ferrara
     '''
 
     return JUGADOR_2 if turno_actual == JUGADOR_1 else JUGADOR_1
 
-#---------------------------control de puntaje-----------------#
+
 
 def guardar_puntaje(puntaje, ultimo_turno, turno_actual):
     '''
-    Retorna una tupla con los puntajes correspondientes
-    a cada jugador dependiendo de cual fue el ganador o
-    de si ambos perdieron
+        Retorna una tupla con los puntajes correspondientes
+        a cada jugador dependiendo de cual fue el ganador o
+        de si ambos perdieron
 
-    - Índice 0: jugador 1
-    - Índice 1: jugador 2
+        - Índice 0: jugador 1
+        - Índice 1: jugador 2
+
+        ~ Tomas Fernández Moreno
     '''
 
     jugador1punt = 0
@@ -76,17 +76,27 @@ def guardar_puntaje(puntaje, ultimo_turno, turno_actual):
             jugador2punt = puntaje
             jugador1punt = round(puntaje / 2)
 
-    return (jugador1punt,jugador2punt)
+    return (jugador1punt, jugador2punt)
+
+
 
 def limpiar_pantalla():
+    '''
+        Nada que aclarar acá :p
+
+        ~ Bruno Ferreyra
+    '''
+
     os.system('cls' if os.name == 'nt' else 'clear')
 
-#-----------------------control del juego----------------------------#
+
 
 def preguntar_jugar_de_nuevo():
     '''
-    Solicita al jugador que ingrese S (si) o N (no)
-    dependiendo de si desea seguir jugando
+        Solicita al jugador que ingrese S (si) o N (no)
+        dependiendo de si desea seguir jugando
+
+        ~ María Rosa Ferrara
     '''
 
     # Variable para almacenar la respuesta
@@ -98,10 +108,14 @@ def preguntar_jugar_de_nuevo():
 
     return respuesta == "S"
 
+
+
 def imprimir_ganador(nombres, puntos, resultado):
     '''
-    Imprime el resumen mostrando como ganador
-    al jugador que haya tenido el último turno
+        Imprime el resumen mostrando como ganador
+        al jugador que haya tenido el último turno
+
+        ~ Tomas Fernández Moreno
     '''
 
     # Obtiene los datos resultantes de la partida
@@ -120,11 +134,15 @@ def imprimir_ganador(nombres, puntos, resultado):
     print(f"El jugador {nombres[perdedor]} perdió un total de {puntaje_jugador} puntos, tenes acumulados {puntos[perdedor]}.")
     print("\n-----\n")
 
+
+
 def imprimir_perdedores(nombres, puntos, resultado, primer_turno):
     '''
-    Imprime el resumen mostrando cuantos puntos
-    perdió cada jugador según cual haya sido el
-    primero
+        Imprime el resumen mostrando cuantos puntos
+        perdió cada jugador según cual haya sido el
+        primero
+
+        ~ Nicolás Cozza
     '''
 
     # Obtiene cual jugador se va a imprimir primero
@@ -141,14 +159,18 @@ def imprimir_perdedores(nombres, puntos, resultado, primer_turno):
     print(f"Y el jugador {nombres[segundo]} perdió un total de 50 y tiene un total de {puntos[segundo]}")
     print("\n-----\n")
 
+
+
 def imprimir_resultados(nombres, puntos, resultado, primer_turno):
     '''
-    Muestra los resultados de la partida actual para
-    cada jugador desplegando puntajes, pérdidas y
-    ganancias de puntos y tiempo empleado en esa ronda
+        Muestra los resultados de la partida actual para
+        cada jugador desplegando puntajes, pérdidas y
+        ganancias de puntos y tiempo empleado en esa ronda
 
-    Al finalizar pregunta si se quiere volver a jugar
-    otra partida
+        Al finalizar pregunta si se quiere volver a jugar
+        otra partida
+
+        ~ Nicolás Cozza
     '''
 
     # Extrae el bool de si alguien ganó
@@ -160,53 +182,59 @@ def imprimir_resultados(nombres, puntos, resultado, primer_turno):
     else:
         imprimir_perdedores(nombres, puntos, resultado, primer_turno)
 
-#-----------control del ingreso ----------------------------#
+
 
 def analizar_input(palabra, arriesgo):
     '''
-    Retorna una tupla con el siguiente formato:
-    - es_igual: booleano que determina si las palabras son iguales
-    - es_palabra_valida: booleano que determina si el arriesgo es válido
-    - mensaje: un mensaje explicitando algún error
+        Retorna una tupla con el siguiente formato:
+        - es_igual: booleano que determina si las palabras son iguales
+        - es_palabra_valida: booleano que determina si el arriesgo es válido
+        - mensaje: un mensaje explicitando algún error
+
+        ~ Edgar Tello
     '''
 
-    mensaje = ""
+    mensajes = []
     es_palabra_valida = True
     
-
-    # Primero, medimos si la longitud de las palabras coinciden
-    if len(palabra) != len(arriesgo):
-        mensaje = "La palabra debe ser de 5 letras"
+    # Valida que los caracteres sean correctos
+    if not arriesgo.isalpha() and arriesgo != "":
+        mensajes.append(f"La palabra {arriesgo} es inválida. No debe contener caracteres especiales ni numéricos.")
         es_palabra_valida = False
-    else:
-        # Valida que el arriesgo no contenga un caracter especial o numérico
-        if not arriesgo.isalpha():
-            mensaje = f"La palabra {arriesgo} es inválida. No debe contener caracteres especiales ni numéricos."
-            es_palabra_valida = False
+
+    # Se mide si la longitud está bien
+    if len(palabra) != len(arriesgo):
+        mensajes.append("Largo de la palabra incorrecto")
+        es_palabra_valida = False
+            
     
     return { \
     "es_igual": palabra == arriesgo, \
     "es_palabra_valida": es_palabra_valida, \
-    "mensaje": mensaje \
+    "mensajes": mensajes \
     }
+
+
 
 def pintar_arriesgo(palabra, arriesgo):
     '''
-    Realiza una iteración letra a letra a los efectos de
-    darles color dependiendo de la posición de cada una.
+        Realiza una iteración letra a letra a los efectos de
+        darles color dependiendo de la posición de cada una.
 
-    Si la letra existe en las dos palabras y se encuentra
-    en la misma posición, le asigna el color VERDE
+        Si la letra existe en las dos palabras y se encuentra
+        en la misma posición, le asigna el color VERDE
 
-    Si la letra existe en las dos palabras y NO está en
-    la misma posición, le asigna el color AMARILLO
+        Si la letra existe en las dos palabras y NO está en
+        la misma posición, le asigna el color AMARILLO
 
-    Si la letra no existe en la otra palabra, le asigna
-    GRIS OSCURO
+        Si la letra no existe en la otra palabra, le asigna
+        GRIS OSCURO
 
-    Retorna una tupla con el siguiente formato:
-    - texto_con_colores: palabra con colores
-    - indices_con_coincidencias: indices coincidentes con el arriesgo
+        Retorna una tupla con el siguiente formato:
+        - texto_con_colores: palabra con colores
+        - indices_con_coincidencias: indices coincidentes con el arriesgo
+
+        ~ Edgar Tello
     '''
 
     texto_con_colores = ""
@@ -253,10 +281,17 @@ def pintar_arriesgo(palabra, arriesgo):
     "indices_con_coincidencias": indices_con_coincidencias, \
     }
 
+
+
 def imprimir_progreso(palabra_secreta, palabra_revelada):
-    # Construye el string de la palabra a adivinar
-    # dependiendo de las coincidencias que haya en los
-    # listados
+    '''
+        Construye el string de la palabra a adivinar
+        dependiendo de las coincidencias que haya en los
+        listados
+
+        ~ Bruno Ferreyra
+    '''
+
     progreso_palabra = ""
     for indice, letra in enumerate(palabra_secreta):
         if palabra_revelada[indice] == True:
@@ -266,30 +301,53 @@ def imprimir_progreso(palabra_secreta, palabra_revelada):
 
     print("Palabra a adivinar: " + progreso_palabra)
 
+
+
 def imprimir_intentos(palabra_secreta, palabras_intentadas):
-    # Imprime todas las palabras intentadas por el jugador
+    '''
+        Imprime todas las palabras intentadas por el jugador
+
+        ~ Bruno Ferreyra
+    '''
+
     for indice_intento in range(5):
         if (indice_intento < len(palabras_intentadas)):
             print(palabras_intentadas[indice_intento])
         else:
             print("?" * len(palabra_secreta))
 
-def imprimir_salida_analisis(analisis, palabra_analizada, palabra_revelada):
-    # Si la palabra ingresada por el jugador no da ningún
-    # problema, imprime con colores la palabra que arriesgó,
-    # y actualiza los índices de las coincidencias encontradas
-    if analisis["mensaje"] == "":
-        print("Palabra arriesgada: " + palabra_analizada["texto_con_colores"])
-        for indice_coincidencia in palabra_analizada["indices_con_coincidencias"]:
-            palabra_revelada[indice_coincidencia] = True
 
-    # Caso contrario, imprime el problema que tiene esa palabra
-    else:
-        print(analisis["mensaje"])
 
-#-----------------control del juego------------------------#
+def imprimir_salida_analisis(palabra_analizada, palabra_revelada):
+    '''
+        Imprime con colores la palabra que arriesgó
+        y actualiza los índices de las coincidencias
+        encontradas
+
+        ~ Bruno Ferreyra
+    '''
+
+    print("Palabra arriesgada: " + palabra_analizada["texto_con_colores"])
+    for indice_coincidencia in palabra_analizada["indices_con_coincidencias"]:
+        palabra_revelada[indice_coincidencia] = True
+
+
+
+def imprimir_errores_analisis(analisis):
+    print("\nSe encontraron los siguientes errores:")
+    for mensaje in analisis["mensajes"]:
+        print(f'- {mensaje}')
+    input("\nPresioná enter para continuar...")
+
+
 
 def partida(jugadores, turno_actual, palabras_para_adivinar):
+    '''
+        Instancia una partida y retorna un diccionario
+        con datos sobre el resultado
+
+        ~ Bruno Ferreyra
+    '''
     
     # Obtiene la palabra para adivinar
     palabra_secreta = random.choice(palabras_para_adivinar)
@@ -325,30 +383,34 @@ def partida(jugadores, turno_actual, palabras_para_adivinar):
         palabra_analizada = pintar_arriesgo(palabra_secreta, arriesgo)
         analisis = analizar_input(palabra_secreta, arriesgo)
 
-        aciertos = len(palabra_analizada["indices_con_coincidencias"])
-        if (aciertos > aciertos_jugador[turno_actual]):
-            aciertos_jugador[turno_actual] = aciertos
+        if analisis["mensajes"]:
+            imprimir_errores_analisis(analisis)
+        else: 
+            aciertos = len(palabra_analizada["indices_con_coincidencias"])
+            if (aciertos > aciertos_jugador[turno_actual]):
+                aciertos_jugador[turno_actual] = aciertos
 
-        # La añade al listado de palabras arriesgadas
-        palabras_intentadas.append(palabra_analizada["texto_con_colores"])
+            # La añade al listado de palabras arriesgadas
+            palabras_intentadas.append(palabra_analizada["texto_con_colores"])
 
-        imprimir_salida_analisis(analisis, palabra_analizada, palabra_revelada)
+            imprimir_salida_analisis(palabra_analizada, palabra_revelada)
 
-        # Si la palabra coincide perfectamente con la palabra a
-        # adivinar, se gana el juego
-        if (analisis["es_igual"]):
-            gano = True
+            # Si la palabra coincide perfectamente con la palabra a
+            # adivinar, se gana el juego
+            if (analisis["es_igual"]):
+                gano = True
 
-        # Caso contrario, simplemente se cambia de turno
-        else:
-            intentos_jugador[turno_actual] += 1
-            turno_actual = cambio_de_turno(turno_actual)
-            
-        # Asigna el puntaje correspondiente dependiendo
-        # de los intentos
-        puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos_totales]
+            # Caso contrario, simplemente se cambia de turno
+            else:
+                intentos_jugador[turno_actual] += 1
+                turno_actual = cambio_de_turno(turno_actual)
+                
+            # Asigna el puntaje correspondiente dependiendo
+            # de los intentos
+            puntaje_jugador = PUNTAJE_POR_INTENTOS[intentos_totales]
 
-        intentos_totales += 1
+            intentos_totales += 1
+            time.sleep(1)
         
     # En caso de que ambos hayan perdido asigna los puntos
     # negativos correspondientes
@@ -375,7 +437,16 @@ def partida(jugadores, turno_actual, palabras_para_adivinar):
     "aciertos_jugador": aciertos_jugador
     }
 
+
+
 def generar_registro_partida(resultado, jugadores, indice_jugador, fecha):
+    '''
+        Retorna un string con la información a registrar
+        de una partida según la consigna de la etapa 9
+
+        ~ Edgar Tello
+    '''
+
     dia = fecha.strftime("%d/%m/%Y")
     hora = fecha.strftime("%H:%M:%S")
     jugador = jugadores[indice_jugador]
@@ -383,7 +454,17 @@ def generar_registro_partida(resultado, jugadores, indice_jugador, fecha):
     intentos = resultado["intentos_jugador"][indice_jugador]
     return f'{dia},{hora},{jugador},{aciertos},{intentos}\n'
 
+
+
 def registrar_partida(resultado, jugadores):
+    '''
+        Genera los registros de la partida para cada jugador
+        y los escribe en el archivo partidas.csv ordenando
+        por cantidad de aciertos
+
+        ~ Tomas Fernández Moreno
+    '''
+
     ahora = datetime.now()
 
     registro_jugador1 = generar_registro_partida(resultado, jugadores, JUGADOR_1, ahora)
@@ -396,9 +477,25 @@ def registrar_partida(resultado, jugadores):
 
     archivo.sobreescribir(RUTA_ARCHIVO_PARTIDAS, registros)
 
+
+
 def imprimir_resumen(partidas):
+    '''
+        Imprime en pantalla un resumen del juego en
+        una tabla siendo cada fila la información de
+        una partida
+
+        ~ Bruno Ferreyra
+    '''
 
     def alinear_item(string):
+        '''
+            Añade los espacios en blanco necesarios
+            para alinear el texto a la tabla
+
+            ~ Bruno Ferreyra
+        '''
+        
         return string + "".join([" " for x in range(18 - len(string))])
 
     print("===================== SINOPSIS DEL JUEGO =====================")
@@ -411,9 +508,13 @@ def imprimir_resumen(partidas):
         print(f'{nro_partida}{palabra}{ganador}{intentos}')
     print("\n")
 
+
+
 def juego(jugadores, palabras, config):
     '''
-    Instancia el juego
+        Instancia el juego
+
+        ~ Bruno Ferreyra
     '''
 
     # Variables que contendrán los puntajes de cada jugador

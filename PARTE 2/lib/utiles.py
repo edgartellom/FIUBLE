@@ -8,6 +8,7 @@ def obtener_color(color):
     return colores[color]
 
 
+
 def obtener_palabras_validas():
     return ["abran", "abria", "acojo", "actuo", "aguda", "agudo", "algas", \
             "almas", "alojo", "alojo", "altas", "altos", "andes", "anima", \
