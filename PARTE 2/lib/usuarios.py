@@ -97,7 +97,7 @@ def registrar_usuario(nombre, clave):
         ~ Bruno Ferreyra
     '''
 
-    archivo.escribir(sys.path[0] + "/db/usuarios.csv", ",".join([nombre, clave]))
+    archivo.escribir(sys.path[0] + "/db/usuarios.csv", ",".join([nombre, clave]) + "\n")
 
 
 
