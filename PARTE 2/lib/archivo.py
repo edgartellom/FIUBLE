@@ -38,18 +38,36 @@ def combinar_cuentos(cuentos, longitud_palabras):
 	'''
 
 	palabras = {}
+	# Para cada texto...
 	for indice, cuento in enumerate(cuentos):
+
+		# Lo abre y lee todas las lineas, siendo que
+		# para cada una...
 		archivo = open(cuento)
 
 		linea = leer_linea(archivo, SEPARADOR_TXT, "")
 
 		while linea:
+
+			#Busca todas las palabras
 			for palabra in linea:
+
+				# Limpia la  palabra de caracteres especiales y
+				# corrobora que cumpla con las condiciones
 				palabra_limpia = palabra.strip(string.punctuation)
 				if palabra_limpia.isalpha() and len(palabra_limpia) == int(longitud_palabras):
+					
+					# Formatea la palabra y revisa que todavía no
+					# exista en el diccionario
 					palabra_formateada = cadenas.formatear_palabra(palabra_limpia)
 					if not palabra_formateada in palabras:
+						
+						# En caso de que no exista añade el listado
+						# con tantos índices como cuentos
 						palabras[palabra_formateada] = [0 for x in range(len(cuentos))]
+					
+					# Añade una unidad en el listado correspondiente
+					# a esa palabra en el índice del texto actual
 					palabras[palabra_formateada][indice] += 1
 			linea = leer_linea(archivo, SEPARADOR_TXT, "")
 		archivo.close()

@@ -334,6 +334,11 @@ def imprimir_salida_analisis(palabra_analizada, palabra_revelada):
 
 
 def imprimir_errores_analisis(analisis):
+    '''
+        Imprime los errores encontrados en el arriesgo ingresado
+
+        ~ Edgar Tello
+    '''
     print("\nSe encontraron los siguientes errores:")
     for mensaje in analisis["mensajes"]:
         print(f'- {mensaje}')
